@@ -1,7 +1,7 @@
 // Service Worker untuk PWA Aplikasi Pajak Daerah
-const CACHE_NAME = 'pajak-app-v1.0.0';
-const STATIC_CACHE = 'pajak-static-v1.0.0';
-const DYNAMIC_CACHE = 'pajak-dynamic-v1.0.0';
+const CACHE_NAME = 'pajak-app-v1.0.1';
+const STATIC_CACHE = 'pajak-static-v1.0.1';
+const DYNAMIC_CACHE = 'pajak-dynamic-v1.0.1';
 
 // Development mode detection
 const isDevelopment = self.location.hostname === 'localhost' ||
@@ -88,31 +88,6 @@ self.addEventListener('install', event => {
   );
 });
 
-// Activate event - cleanup old caches
-self.addEventListener('activate', event => {
-  console.log('[SW] Activate event');
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName).catch(error => {
-              console.warn('[SW] Failed to delete cache:', cacheName, error);
-              return Promise.resolve(); // Continue even if deletion fails
-            });
-          }
-        })
-      );
-    }).then(() => {
-      console.log('[SW] Activate completed');
-      return self.clients.claim();
-    }).catch(error => {
-      console.error('[SW] Activate failed:', error);
-      return self.clients.claim(); // Still claim clients even on error
-    })
-  );
-});
 
 // Fetch event - serve from cache or network
 self.addEventListener('fetch', event => {
@@ -183,10 +158,17 @@ self.addEventListener('fetch', event => {
   }
 
   // Handle static assets - Cache First strategy
-  if (STATIC_ASSETS.some(asset => url.pathname.endsWith(asset))) {
+  if (STATIC_ASSETS.some(asset => url.pathname === asset || url.pathname.endsWith(asset))) {
     event.respondWith(
       caches.match(request).then(cachedResponse => {
         if (cachedResponse) {
+          // Verify content type for JavaScript files
+          if (url.pathname.endsWith('.js') && !cachedResponse.headers.get('content-type')?.includes('javascript')) {
+            console.warn('[SW] Cached JS file has wrong content type, fetching from network');
+            // Clear corrupted cache entry
+            caches.open(STATIC_CACHE).then(cache => cache.delete(request));
+            return fetch(request);
+          }
           return cachedResponse;
         }
         return fetch(request).then(response => {
@@ -197,6 +179,18 @@ self.addEventListener('fetch', event => {
             });
           }
           return response;
+        }).catch(error => {
+          console.error('[SW] Failed to fetch static asset:', url.pathname, error);
+          // Return a basic response for critical assets
+          if (url.pathname.endsWith('.js')) {
+            return new Response('// Service Worker: Asset temporarily unavailable\nconsole.log("Asset loading failed");', {
+              headers: { 'Content-Type': 'application/javascript' }
+            });
+          }
+          return new Response('Asset temporarily unavailable', {
+            status: 503,
+            headers: { 'Content-Type': 'text/plain' }
+          });
         });
       })
     );
@@ -412,3 +406,62 @@ async function syncDataPeriodically() {
     console.error('[SW] Periodic sync failed:', error);
   }
 }
+
+// Helper function to clear corrupted cache entries
+async function clearCorruptedCache() {
+  try {
+    const cacheNames = await caches.keys();
+    for (const cacheName of cacheNames) {
+      if (cacheName.includes('pajak')) {
+        const cache = await caches.open(cacheName);
+        const keys = await cache.keys();
+
+        for (const request of keys) {
+          const response = await cache.match(request);
+          if (response) {
+            const contentType = response.headers.get('content-type');
+            // Check for JavaScript files with wrong content type
+            if (request.url.endsWith('.js') && contentType && !contentType.includes('javascript')) {
+              console.log('[SW] Removing corrupted JS cache entry:', request.url);
+              await cache.delete(request);
+            }
+          }
+        }
+      }
+    }
+    console.log('[SW] Corrupted cache cleanup completed');
+  } catch (error) {
+    console.error('[SW] Cache cleanup failed:', error);
+  }
+}
+
+// Call cache cleanup on activation
+self.addEventListener('activate', event => {
+  console.log('[SW] Activate event');
+  event.waitUntil(
+    Promise.all([
+      // Clear corrupted cache entries
+      clearCorruptedCache(),
+      // Clean up old caches
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
+              console.log('[SW] Deleting old cache:', cacheName);
+              return caches.delete(cacheName).catch(error => {
+                console.warn('[SW] Failed to delete cache:', cacheName, error);
+                return Promise.resolve();
+              });
+            }
+          })
+        );
+      })
+    ]).then(() => {
+      console.log('[SW] Activate completed');
+      return self.clients.claim();
+    }).catch(error => {
+      console.error('[SW] Activate failed:', error);
+      return self.clients.claim();
+    })
+  );
+});
