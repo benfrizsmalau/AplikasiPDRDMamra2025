@@ -1219,28 +1219,51 @@ function setupKetetapanEditModal() {
 
 async function fetchAllData() {
     try {
-    const response = await fetch(apiUrl);
+        const response = await fetch(apiUrl);
 
-        // Periksa apakah respons adalah fallback HTML dari Service Worker
+        // Check if response is HTML (fallback page)
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('text/html')) {
             console.warn('Menerima respons HTML dari Service Worker (fallback offline).');
-            throw new Error('Tidak ada koneksi internet dan tidak ada data tersimpan secara offline.');
+            // Return mock data for development
+            return {
+                wajibPajak: [],
+                wilayah: [],
+                masterPajak: [],
+                ketetapan: [],
+                pembayaran: [],
+                fiskal: [],
+                targetPajakRetribusi: [],
+                status: 'offline'
+            };
         }
 
-        // Jika bukan fallback HTML, lanjutkan seperti biasa (mengharapkan JSON)
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Gagal mengambil data dari server. Status: ${response.status}. Pesan: ${errorText}`);
-    }
-    const result = await response.json();
-    if (result.status === 'gagal') throw new Error(result.message);
+        // Check if response is ok
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('API Error:', response.status, errorText);
+            throw new Error(`Gagal mengambil data dari server. Status: ${response.status}`);
+        }
 
-    return result;
+        const result = await response.json();
+        if (result.status === 'gagal') throw new Error(result.message);
+
+        return result;
 
     } catch (error) {
-        console.warn('Error mengambil data dari network, mencoba dari IndexedDB:', error);
-        throw new Error('Tidak ada koneksi internet dan tidak ada data tersimpan secara offline.');
+        console.warn('Error mengambil data dari network:', error.message);
+        // Return mock data instead of throwing error
+        return {
+            wajibPajak: [],
+            wilayah: [],
+            masterPajak: [],
+            ketetapan: [],
+            pembayaran: [],
+            fiskal: [],
+            targetPajakRetribusi: [],
+            status: 'error',
+            error: error.message
+        };
     }
 }
 
@@ -1832,14 +1855,35 @@ async function handleDeleteKetetapanClick(idKetetapan) {
 async function loadDashboardData() {
     try {
         const response = await fetch('/.netlify/functions/api');
+
+        // Check if response is HTML (API not available)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+            console.warn('API not available, showing offline mode');
+            showOfflineDashboard();
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
         const data = await response.json();
-        
+
+        // Check if data has error status
+        if (data.status === 'error' || data.error) {
+            console.warn('API returned error:', data.error);
+            showOfflineDashboard();
+            return;
+        }
+
         // Update statistik
         const wajibPajak = data.wajibPajak || [];
         const ketetapan = data.ketetapan || [];
         const pembayaran = data.pembayaran || [];
         const targetList = data.targetPajakRetribusi || [];
-        const tahunBerjalan = new Date().getFullYear();
+        const tahunBerjalan = new Date().getFullYear();</search>
+</search_and_replace>
         
         // Hitung total target tahun berjalan
         const totalTargetTahun = targetList.filter(t => t.Tahun == tahunBerjalan).reduce((sum, t) => sum + (parseFloat(t.Target) || 0), 0);
