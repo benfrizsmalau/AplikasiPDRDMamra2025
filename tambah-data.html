@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Data - Aplikasi Pajak Daerah</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Hapus Choices.js -->
+</head>
+<body id="page-tambah-wp">
+
+    <div class="instansi-header">
+        <img src="images/logo.png" alt="Logo" class="instansi-logo">
+        <div class="instansi-text">
+            <div class="instansi-title">APLIKASI SISTEM INFORMASI PENDAPATAN DAERAH</div>
+            <div class="instansi-sub">BIDANG PENDAPATAN DAERAH</div>
+            <div class="instansi-sub2">BADAN PENDAPATAN PENGELOLAAN KEUANGAN DAN ASET DAERAH KABUPATEN MAMBERAMO RAYA</div>
+        </div>
+    </div>
+
+    <div class="sidebar-menu">
+        <nav>
+            <a href="index.html">Dasbor</a>
+            <a href="tambah-data.html" class="active">Tambah Data WP</a>
+            <a href="lihat-data.html">Lihat Data WP</a>
+            <a href="tambah-ketetapan.html">Buat Ketetapan</a>
+            <a href="daftar-ketetapan.html">Daftar Ketetapan</a>
+            <a href="setoran-pajak.html">Setoran Pajak</a>
+            <a href="daftar-pembayaran.html">Daftar Pembayaran</a>
+            <a href="daftar-fiskal.html">Daftar Fiskal</a>
+            <a href="review-wajib-pajak.html">Review Data WP</a>
+            <a href="report.html">Laporan</a>
+            <a href="advanced-report.html" class="menu-advanced">🚀 Advanced Reporting</a>
+            <a href="target.html">Target Pajak & Retribusi</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <h2 class="form-title"><span class="form-title-icon">📝</span> Tambah Data Wajib Pajak</h2>
+        <div class="wp-form-card">
+        <form id="pajakForm">
+            <div class="form-group full-width" style="flex-direction: row; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <input type="checkbox" id="generateNpwpd" style="width: auto;">
+                <label for="generateNpwpd" style="margin: 0;">Buat NPWPD Otomatis (untuk Wajib Pajak Baru)</label>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="npwpd">NPWPD <small class="form-helper">(Nomor Pokok Wajib Pajak Daerah)</small></label>
+                    <input type="text" id="npwpd" required placeholder="Ketik NPWPD manual...">
+                </div>
+                <div class="form-group">
+                    <label for="namaUsaha">Nama Usaha <small class="form-helper">(Nama Perusahaan)</small></label>
+                    <input type="text" id="namaUsaha" required placeholder="Nama Usaha">
+                </div>
+                <div class="form-group">
+                    <label for="namaPemilik">Nama Pemilik <small class="form-helper">(Nama Pemilik Usaha atau Kuasa Pemilik Usaha)</small></label>
+                    <input type="text" id="namaPemilik" required placeholder="Nama Pemilik">
+                </div>
+                <div class="form-group">
+                    <label for="nikKtp">NIK KTP <small class="form-helper">(Masukkan 16 Digit Nomor Induk Kependudukan)</small></label>
+                    <input type="text" id="nikKtp" required placeholder="NIK KTP">
+                </div>
+                <div class="form-group full-width">
+                    <label for="alamat">Alamat <small class="form-helper">(Alamat lengkap usaha atau domisili)</small></label>
+                    <input type="text" id="alamat" required placeholder="Alamat">
+                </div>
+                <div class="form-group">
+                    <label for="telephone">Telephone <small class="form-helper">(Nomor telepon aktif yang bisa dihubungi)</small></label>
+                    <input type="text" id="telephone" required placeholder="Nomor Telepon">
+                </div>
+                <div class="form-group">
+                    <label for="kecamatan">Kecamatan <small class="form-helper">(Pilih sesuai lokasi usaha)</small></label>
+                    <select id="kecamatan" required>
+                        <option value="">-- Pilih Kecamatan --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="kelurahan">Kelurahan <small class="form-helper">(Pilih sesuai lokasi usaha)</small></label>
+                    <select id="kelurahan" required>
+                        <option value="">-- Pilih Kelurahan --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fotoPemilik">Foto Pemilik</label>
+                    <input type="file" id="fotoPemilik" accept="image/*" style="max-width: 220px;">
+                </div>
+                <div class="form-group">
+                    <label for="fotoTempatUsaha">Foto Tempat Usaha</label>
+                    <input type="file" id="fotoTempatUsaha" accept="image/*" style="max-width: 220px;">
+                </div>
+                <div class="form-group">
+                    <label for="fotoKtp">Foto KTP</label>
+                    <input type="file" id="fotoKtp" accept="image/*" style="max-width: 220px;">
+                </div>
+                <div class="form-group" id="jenisWpGroup" style="display: none;">
+                    <label for="jenisWp">Jenis Wajib Pajak</label>
+                    <select id="jenisWp">
+                        <option value="1">Pribadi</option>
+                        <option value="2">Badan Usaha</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Compliance Tracking Section -->
+            <div class="compliance-section">
+                <h3>📋 Compliance Tracking (MCP)</h3>
+
+                <div class="compliance-status">
+                    <label for="complianceStatus">Status Compliance:</label>
+                    <select id="complianceStatus" name="compliance_status">
+                        <option value="unknown">❓ Unknown</option>
+                        <option value="compliant">✅ Compliant</option>
+                        <option value="warning">⚠️ Warning</option>
+                        <option value="non_compliant">❌ Non Compliant</option>
+                    </select>
+                </div>
+
+                <div class="regulatory-reference">
+                    <label for="regulatoryNotes">Reference Regulasi:</label>
+                    <input type="text" id="regulatoryNotes" name="regulatory_notes"
+                           placeholder="Contoh: Perkada No. 123 Tahun 2024">
+                </div>
+
+                <div class="document-checklist">
+                    <h4>Dokumen Wajib (MCP Compliance)</h4>
+                    <div class="document-item">
+                        <input type="checkbox" id="doc_ktp" name="doc_ktp">
+                        <label for="doc_ktp">KTP</label>
+                        <span class="reference">Perkada No. 123/2024</span>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="doc_npwp" name="doc_npwp">
+                        <label for="doc_npwp">NPWP</label>
+                        <span class="reference">Perkada No. 456/2024</span>
+                    </div>
+                    <div class="document-item">
+                        <input type="checkbox" id="doc_domisili" name="doc_domisili">
+                        <label for="doc_domisili">Domisili</label>
+                        <span class="reference">Perkada No. 789/2024</span>
+                    </div>
+                </div>
+
+                <div class="compliance-score-display">
+                    <div class="score-preview">
+                        <span>Compliance Score: </span>
+                        <span id="complianceScoreDisplay">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" id="submitButton">Kirim Data</button>
+            <div id="status"></div>
+        </form>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script src="compliance-tracker.js"></script>
+    <script>
+        // Compliance Tracking Integration
+        document.addEventListener('DOMContentLoaded', function() {
+            const complianceStatus = document.getElementById('complianceStatus');
+            const regulatoryNotes = document.getElementById('regulatoryNotes');
+            const complianceScoreDisplay = document.getElementById('complianceScoreDisplay');
+
+            // Document checklist handlers
+            const documentCheckboxes = document.querySelectorAll('.document-item input[type="checkbox"]');
+            documentCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateComplianceScore);
+            });
+
+            // Form field change handlers for real-time compliance calculation
+            const formFields = ['npwpd', 'nikKtp', 'alamat'];
+            formFields.forEach(fieldId => {
+                const element = document.getElementById(fieldId);
+                if (element) {
+                    element.addEventListener('input', updateComplianceScore);
+                }
+            });
+
+            function updateComplianceScore() {
+                // Gather current form data
+                const formData = {
+                    npwpd: document.getElementById('npwpd').value,
+                    ktp: document.getElementById('nikKtp').value,
+                    domisili: document.getElementById('alamat').value,
+                    npwp: document.getElementById('doc_npwp').checked ? 'completed' : '',
+                    foto: 'completed' // Assume photo is uploaded if form is being filled
+                };
+
+                // Calculate compliance score
+                const score = complianceTracker.calculateComplianceScore(formData);
+                const status = complianceTracker.determineComplianceStatus(score);
+
+                // Update display
+                complianceScoreDisplay.textContent = `${score}/100`;
+                complianceStatus.value = status;
+
+                // Visual feedback
+                updateComplianceVisual(status);
+            }
+
+            function updateComplianceVisual(status) {
+                const scoreDisplay = document.getElementById('complianceScoreDisplay');
+                scoreDisplay.className = `compliance-score-${status}`;
+            }
+
+            // Initialize compliance calculation
+            updateComplianceScore();
+        });
+    </script>
+    <!-- Hapus Choices.js -->
+    <div class="watermark-footer">MADE BY REYNOLDS</div>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Test - Aplikasi Pajak Daerah</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #1565c0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #1976d2;
+        }
+        .feature-item h4 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+        .feature-item p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 PWA Test Suite</h1>
+    <p>Uji semua fitur Progressive Web App dari aplikasi Sistem Informasi Pendapatan Daerah.</p>
+
+    <div class="test-section">
+        <h2>📱 PWA Core Features</h2>
+        <div class="feature-list">
+            <div class="feature-item">
+                <h4>Service Worker</h4>
+                <p>Background caching dan offline functionality</p>
+            </div>
+            <div class="feature-item">
+                <h4>Web App Manifest</h4>
+                <p>Install prompt dan native app experience</p>
+            </div>
+            <div class="feature-item">
+                <h4>Offline Support</h4>
+                <p>Access cached content tanpa koneksi internet</p>
+            </div>
+            <div class="feature-item">
+                <h4>Push Notifications</h4>
+                <p>Real-time notifications (jika diaktifkan)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🛠️ Test Tools</h2>
+        <button class="test-button" onclick="testServiceWorker()">Test Service Worker</button>
+        <button class="test-button" onclick="testCache()">Test Cache Storage</button>
+        <button class="test-button" onclick="testManifest()">Test Web Manifest</button>
+        <button class="test-button" onclick="testInstallPrompt()">Test Install Prompt</button>
+        <button class="test-button" onclick="testNotifications()">Test Notifications</button>
+        <button class="test-button" onclick="testOfflineMode()">Test Offline Mode</button>
+        <button class="test-button" onclick="clearCache()">Clear All Cache</button>
+        <button class="test-button" onclick="runAllTests()">Run All Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>ℹ️ System Information</h2>
+        <div id="system-info"></div>
+    </div>
+
+    <script>
+        // Test results container
+        const resultsDiv = document.getElementById('test-results');
+        const systemInfoDiv = document.getElementById('system-info');
+
+        // Display system information
+        function displaySystemInfo() {
+            const info = {
+                'User Agent': navigator.userAgent,
+                'Platform': navigator.platform,
+                'Cookie Enabled': navigator.cookieEnabled,
+                'Online Status': navigator.onLine ? 'Online' : 'Offline',
+                'Service Worker Support': 'serviceWorker' in navigator ? 'Yes' : 'No',
+                'Cache API Support': 'caches' in window ? 'Yes' : 'No',
+                'Notification Support': 'Notification' in window ? 'Yes' : 'No',
+                'Push Manager Support': 'PushManager' in window ? 'Yes' : 'No',
+                'Background Sync Support': 'serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype ? 'Yes' : 'No',
+                'Install Prompt Support': 'onbeforeinstallprompt' in window ? 'Yes' : 'No'
+            };
+
+            let html = '<table style="width: 100%; border-collapse: collapse;">';
+            for (const [key, value] of Object.entries(info)) {
+                html += `<tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px; font-weight: bold; width: 200px;">${key}</td>
+                    <td style="padding: 8px;">${value}</td>
+                </tr>`;
+            }
+            html += '</table>';
+            systemInfoDiv.innerHTML = html;
+        }
+
+        // Add test result
+        function addTestResult(testName, status, message = '') {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `status ${status}`;
+            resultDiv.innerHTML = `<strong>${testName}:</strong> ${message}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        // Clear test results
+        function clearTestResults() {
+            resultsDiv.innerHTML = '';
+        }
+
+        // Test Service Worker
+        async function testServiceWorker() {
+            try {
+                if (!('serviceWorker' in navigator)) {
+                    addTestResult('Service Worker', 'error', 'Service Worker tidak didukung');
+                    return;
+                }
+
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    addTestResult('Service Worker', 'success', `Terdaftar - State: ${registration.active ? 'Active' : 'Inactive'}`);
+                } else {
+                    addTestResult('Service Worker', 'error', 'Service Worker belum terdaftar');
+                }
+            } catch (error) {
+                addTestResult('Service Worker', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        // Test Cache Storage
+        async function testCache() {
+            try {
+                if (!('caches' in window)) {
+                    addTestResult('Cache Storage', 'error', 'Cache API tidak didukung');
+                    return;
+                }
+
+                const cacheNames = await caches.keys();
+                if (cacheNames.length > 0) {
+                    let totalItems = 0;
+                    for (const cacheName of cacheNames) {
+                        const cache = await caches.open(cacheName);
+                        const keys = await cache.keys();
+                        totalItems += keys.length;
+                    }
+                    addTestResult('Cache Storage', 'success', `${cacheNames.length} cache(s) dengan ${totalItems} item(s)`);
+                } else {
+                    addTestResult('Cache Storage', 'info', 'Tidak ada cache yang tersimpan');
+                }
+            } catch (error) {
+                addTestResult('Cache Storage', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        // Test Web Manifest
+        async function testManifest() {
+            try {
+                const manifestLink = document.querySelector('link[rel="manifest"]');
+                if (!manifestLink) {
+                    addTestResult('Web Manifest', 'error', 'Manifest link tidak ditemukan');
+                    return;
+                }
+
+                const response = await fetch(manifestLink.href);
+                if (response.ok) {
+                    const manifest = await response.json();
+                    addTestResult('Web Manifest', 'success', `Valid - Name: ${manifest.name || manifest.short_name}`);
+                } else {
+                    addTestResult('Web Manifest', 'error', 'Gagal memuat manifest');
+                }
+            } catch (error) {
+                addTestResult('Web Manifest', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        // Test Install Prompt
+        function testInstallPrompt() {
+            if ('onbeforeinstallprompt' in window) {
+                addTestResult('Install Prompt', 'success', 'Install prompt didukung');
+            } else {
+                addTestResult('Install Prompt', 'info', 'Install prompt tidak didukung di browser ini');
+            }
+        }
+
+        // Test Notifications
+        async function testNotifications() {
+            try {
+                if (!('Notification' in window)) {
+                    addTestResult('Notifications', 'error', 'Notification API tidak didukung');
+                    return;
+                }
+
+                let permission = Notification.permission;
+                if (permission === 'default') {
+                    permission = 'Belum diminta';
+                }
+
+                addTestResult('Notifications', 'info', `Status permission: ${permission}`);
+
+                // Try to request permission
+                if (permission === 'default') {
+                    const newPermission = await Notification.requestPermission();
+                    addTestResult('Notification Request', newPermission === 'granted' ? 'success' : 'error',
+                        `Permission ${newPermission}`);
+                }
+            } catch (error) {
+                addTestResult('Notifications', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        // Test Offline Mode
+        function testOfflineMode() {
+            if (navigator.onLine) {
+                addTestResult('Offline Mode', 'info', 'Saat ini online - Coba matikan koneksi internet untuk test offline');
+            } else {
+                addTestResult('Offline Mode', 'success', 'Mode offline aktif');
+            }
+        }
+
+        // Clear All Cache
+        async function clearCache() {
+            try {
+                if (!('caches' in window)) {
+                    addTestResult('Clear Cache', 'error', 'Cache API tidak didukung');
+                    return;
+                }
+
+                const cacheNames = await caches.keys();
+                await Promise.all(
+                    cacheNames.map(cacheName => caches.delete(cacheName))
+                );
+
+                addTestResult('Clear Cache', 'success', `${cacheNames.length} cache(s) berhasil dihapus`);
+            } catch (error) {
+                addTestResult('Clear Cache', 'error', `Error: ${error.message}`);
+            }
+        }
+
+        // Run All Tests
+        async function runAllTests() {
+            clearTestResults();
+            addTestResult('Test Suite', 'info', 'Menjalankan semua test...');
+
+            await testServiceWorker();
+            await testCache();
+            await testManifest();
+            testInstallPrompt();
+            await testNotifications();
+            testOfflineMode();
+
+            addTestResult('Test Suite', 'success', 'Semua test selesai');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            displaySystemInfo();
+        });
+
+        // Register service worker for this test page
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('Service Worker registered for test page'))
+                .catch(error => console.error('SW registration failed:', error));
+        }
+    </script>
+</body>
+</html>

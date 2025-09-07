@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Connection</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test API Connection</h1>
+
+    <div class="test-section">
+        <h3>Test API & Notification Systems</h3>
+        <button onclick="testAPIConnection()">Test API Connection</button>
+        <button onclick="testBrowserNotifications()">Test Browser Notifications</button>
+        <button onclick="testAllNotifications()">Test All Systems</button>
+        <div id="apiResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>API URL Configuration</h3>
+        <p>Current API URL: <code id="apiUrl"></code></p>
+        <p>Server Status: <span id="serverStatus">Checking...</span></p>
+    </div>
+
+    <script>
+        // Test API connection
+        async function testAPIConnection() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<p>🔄 Testing API connection...</p>';
+
+            try {
+                const response = await fetch('/.netlify/functions/api');
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ API Connection Successful!</h4>
+                            <p>Status: ${response.status}</p>
+                            <p>Data fetched: ${data.wajibPajak?.length || 0} wajib pajak records</p>
+                            <details>
+                                <summary>View Response Data</summary>
+                                <pre>${JSON.stringify(data, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ API Error</h4>
+                            <p>Status: ${response.status}</p>
+                            <p>Message: ${data.message || 'Unknown error'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Connection Failed</h4>
+                        <p>Error: ${error.message}</p>
+                        <p>Make sure Netlify dev server is running on port 3000</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Test Browser Notifications
+        async function testBrowserNotifications() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<p>🔄 Testing Browser Notifications...</p>';
+
+            try {
+                // Check if browser notifications are supported
+                if (!('Notification' in window)) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Browser Notifications Not Supported</h4>
+                            <p>Browser Anda tidak mendukung notifikasi.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Request permission if needed
+                if (Notification.permission === 'default') {
+                    const permission = await Notification.requestPermission();
+                    if (permission !== 'granted') {
+                        resultDiv.innerHTML = `
+                            <div class="error">
+                                <h4>❌ Permission Denied</h4>
+                                <p>Izin notifikasi ditolak. Silakan izinkan notifikasi di browser settings.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                }
+
+                // Show test notification
+                const notification = new Notification('🧪 Test Browser Notification', {
+                    body: 'Ini adalah test notifikasi browser untuk sistem pajak!',
+                    icon: '/images/logo.png',
+                    badge: '/images/logo.png',
+                    tag: 'test-notification'
+                });
+
+                // Auto-close after 3 seconds
+                setTimeout(() => {
+                    notification.close();
+                }, 3000);
+
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Browser Notification Test Successful!</h4>
+                        <p>Notifikasi muncul di browser Anda</p>
+                        <div style="background: #e8f5e8; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                            <strong>🎉 Browser Notifications Ready!</strong><br>
+                            • Gratis dan tanpa setup<br>
+                            • Bekerja di semua browser modern<br>
+                            • Tidak perlu nomor telepon<br>
+                            • Instant notifications
+                        </div>
+                    </div>
+                `;
+
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Browser Notification Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Test All Notification Systems
+        async function testAllNotifications() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<p>🔄 Testing All Notification Systems...</p>';
+
+            const results = {
+                api: false,
+                whatsapp: false,
+                browser: false
+            };
+
+            // Test API
+            try {
+                const apiResponse = await fetch('/.netlify/functions/api');
+                results.api = apiResponse.ok;
+            } catch (error) {
+                console.log('API test failed:', error);
+            }
+
+            // Test Browser Notifications
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    results.browser = true;
+                } else if (Notification.permission === 'default') {
+                    // Try to request permission
+                    try {
+                        const permission = await Notification.requestPermission();
+                        results.browser = permission === 'granted';
+                    } catch (error) {
+                        console.log('Browser notification permission failed:', error);
+                    }
+                }
+            }
+
+            // Test WhatsApp (will fail gracefully)
+            try {
+                const whatsappResponse = await fetch('/.netlify/functions/api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'sendWhatsApp',
+                        type: 'test',
+                        npwpd: 'P.2.000001.01.01'
+                    })
+                });
+                const whatsappData = await whatsappResponse.json();
+                results.whatsapp = whatsappData.success || whatsappData.disabled;
+            } catch (error) {
+                console.log('WhatsApp test failed:', error);
+            }
+
+            // Show comprehensive results
+            resultDiv.innerHTML = `
+                <div class="success">
+                    <h4>📊 Notification Systems Test Results</h4>
+
+                    <div style="display: grid; gap: 10px; margin-top: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20px;">${results.api ? '✅' : '❌'}</span>
+                            <div>
+                                <strong>API Connection</strong><br>
+                                <small>${results.api ? 'Connected & Working' : 'Connection Failed'}</small>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20px;">${results.browser ? '✅' : '❌'}</span>
+                            <div>
+                                <strong>Browser Notifications</strong><br>
+                                <small>${results.browser ? 'Ready & Working' : 'Permission Required'}</small>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20px;">${results.whatsapp ? '✅' : '❌'}</span>
+                            <div>
+                                <strong>WhatsApp/SMS</strong><br>
+                                <small>${results.whatsapp ? 'Disabled (Cost-effective)' : 'Setup Required'}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 5px; margin-top: 15px;">
+                        <strong>🎯 Recommendation:</strong><br>
+                        Gunakan <strong>Browser Notifications</strong> - Gratis, mudah, dan langsung bekerja!
+                    </div>
+                </div>
+            `;
+
+            // Show browser notification if enabled
+            if (results.browser) {
+                setTimeout(() => {
+                    new Notification('🎉 All Systems Tested!', {
+                        body: 'Sistem notifikasi Anda sudah siap digunakan!',
+                        icon: '/images/logo.png'
+                    });
+                }, 1000);
+            }
+        }
+
+        // Check API URL and server status
+        function checkConfiguration() {
+            // Determine API URL based on environment
+            const isLocalhost = window.location.hostname === 'localhost' ||
+                               window.location.hostname === '127.0.0.1';
+
+            const apiUrl = isLocalhost
+                ? 'http://localhost:3000/.netlify/functions/api'
+                : '/.netlify/functions/api';
+
+            document.getElementById('apiUrl').textContent = apiUrl;
+
+            // Test server connectivity
+            fetch(apiUrl)
+                .then(response => {
+                    document.getElementById('serverStatus').innerHTML =
+                        '<span style="color: green;">✅ Online</span>';
+                })
+                .catch(error => {
+                    document.getElementById('serverStatus').innerHTML =
+                        '<span style="color: red;">❌ Offline</span>';
+                });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkConfiguration();
+        });
+    </script>
+</body>
+</html>

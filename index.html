@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dasbor - Aplikasi Pajak Daerah</title>
+    <meta name="description" content="Aplikasi modern untuk mengelola data wajib pajak, ketetapan, dan pembayaran pajak daerah">
+    <meta name="theme-color" content="#1976d2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PajakApp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="images/logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="images/logo.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body id="page-dashboard">
+
+    <div class="instansi-header">
+        <img src="images/logo.png" alt="Logo" class="instansi-logo">
+        <div class="instansi-text">
+            <div class="instansi-title">APLIKASI SISTEM INFORMASI PENDAPATAN DAERAH</div>
+            <div class="instansi-sub">BIDANG PENDAPATAN DAERAH</div>
+            <div class="instansi-sub2">BADAN PENDAPATAN PENGELOLAAN KEUANGAN DAN ASET DAERAH KABUPATEN MAMBERAMO RAYA</div>
+        </div>
+        <div class="theme-toggle">
+            <button id="themeToggle" class="theme-toggle-btn" title="Toggle Dark Mode">
+                🌙
+            </button>
+        </div>
+    </div>
+
+    <div class="sidebar-menu">
+        <nav>
+            <a href="index.html" class="active">Dasbor</a>
+            <a href="tambah-data.html">Tambah Data WP</a>
+            <a href="lihat-data.html">Lihat Data WP</a>
+            <a href="tambah-ketetapan.html">Buat Ketetapan</a>
+            <a href="daftar-ketetapan.html">Daftar Ketetapan</a>
+            <a href="setoran-pajak.html">Setoran Pajak</a>
+            <a href="daftar-pembayaran.html">Daftar Pembayaran</a>
+            <a href="daftar-fiskal.html">Daftar Fiskal</a>
+            <a href="review-wajib-pajak.html">Review Data WP</a>
+            <a href="report.html">Laporan</a>
+            <a href="advanced-report.html" class="menu-advanced">🚀 Advanced Reporting</a>
+            <a href="test-whatsapp.html">🧪 Test WhatsApp</a>
+            <a href="test-api.html">🔧 Test API</a>
+            <a href="test-compliance.html">📋 Test Compliance</a>
+            <a href="target.html">Target Pajak & Retribusi</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h2>Selamat Datang di Dasbor</h2>
+            <p>Gunakan menu di samping untuk mengelola data wajib pajak dan fitur lainnya. Sistem ini membantu Anda mengelola administrasi pajak daerah dengan lebih efisien.</p>
+            
+            <!-- Date and Time Display -->
+            <div class="datetime-section">
+                <div class="datetime-card">
+                    <div class="datetime-icon">📅</div>
+                    <div class="datetime-content">
+                        <div class="datetime-label">Hari ini</div>
+                        <div class="datetime-value" id="currentDate">Loading...</div>
+                    </div>
+                </div>
+                <div class="datetime-card">
+                    <div class="datetime-icon">🕐</div>
+                    <div class="datetime-content">
+                        <div class="datetime-label">Waktu</div>
+                        <div class="datetime-value" id="currentTime">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout dashboard atas: 2 kolom -->
+<div class="dashboard-top-row">
+  <div class="dashboard-status-col">
+    <div class="system-status">
+      <h3>Status sistem hari ini</h3>
+      <div class="status-list">
+        <div class="status-item">
+          <span class="status-bulb status-green"></span>
+          <span>Sistem berjalan normal</span>
+        </div>
+        <div class="status-item">
+          <span class="status-bulb status-blue"></span>
+          <span>Database terhubung</span>
+        </div>
+        <div class="status-item">
+          <span class="status-bulb status-purple"></span>
+          <span>Backup otomatis aktif</span>
+        </div>
+        <div class="status-item">
+          <span class="status-bulb status-green" id="pwa-status-bulb"></span>
+          <span id="pwa-status-text">PWA siap digunakan</span>
+        </div>
+        <div class="status-item">
+          <span class="status-bulb status-blue" id="network-status-bulb"></span>
+          <span id="network-status-text">Online</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="dashboard-stats-col">
+    <div class="dashboard-grid dashboard-grid-top">
+      <div class="stat-card stat-blue">
+        <div class="stat-icon">👥</div>
+        <div class="stat-label">Jumlah WP</div>
+        <div class="stat-value" id="totalWp">Loading...</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="stat-icon">📄</div>
+        <div class="stat-label">Jumlah Ketetapan</div>
+        <div class="stat-value" id="totalKetetapan">Loading...</div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="stat-icon">💰</div>
+        <div class="stat-label">Sudah Setor</div>
+        <div class="stat-value" id="totalPembayaran">Loading...</div>
+      </div>
+      <div class="stat-card stat-purple">
+        <div class="stat-icon">📝</div>
+        <div class="stat-label">SKPD/SKRD Terbit</div>
+        <div class="stat-value" id="totalSkpdSkrd">Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- END dashboard-top-row -->
+
+<!-- Hapus/move grid lama agar tidak dobel -->
+<!-- <div class="dashboard-grid">...</div> -->
+
+        <!-- Additional Statistics -->
+        <div class="dashboard-grid-secondary">
+            <div class="stat-card stat-pink">
+                <div class="stat-icon">🧾</div>
+                <div class="stat-label">SSPD/SSRD Terbit</div>
+                <div class="stat-value" id="totalSspdSsrd">Loading...</div>
+            </div>
+            <div class="stat-card stat-teal">
+                <div class="stat-icon">📑</div>
+                <div class="stat-label">Fiskal Terbit</div>
+                <div class="stat-value" id="totalFiskal">Loading...</div>
+            </div>
+            <div class="stat-card stat-gold">
+                <div class="stat-icon">💵</div>
+                <div class="stat-label">Nilai Ketetapan (Total)</div>
+                <div class="stat-value" id="totalNilaiKetetapan">Loading...</div>
+            </div>
+            <div class="stat-card stat-dark">
+                <div class="stat-icon">💳</div>
+                <div class="stat-label">Nilai Setoran (Total)</div>
+                <div class="stat-value" id="totalNilaiSetoran">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="dashboard-chart-section">
+            <h3>Grafik Per Bulan</h3>
+            <p class="chart-subtitle">Perbandingan nilai ketetapan dan pembayaran</p>
+            <div class="chart-container" style="position: relative; height: 400px; width: 100%; margin: 20px 0;">
+                <canvas id="dashboardChart"></canvas>
+            </div>
+        </div>
+
+        <!-- PWA Test Section (Development Only) -->
+        <div id="pwa-test-section" style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; display: none;">
+            <h3>🧪 PWA Test Tools</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
+                <button onclick="pwaManager.demoNotification()" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Test Notification</button>
+                <button onclick="pwaManager.getCacheInfo().then(info => alert(JSON.stringify(info, null, 2)))" style="padding: 8px 16px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer;">Cache Info</button>
+                <button onclick="navigator.serviceWorker.getRegistrations().then(registrations => alert('Service Workers: ' + registrations.length))" style="padding: 8px 16px; background: #ffc107; color: #212529; border: none; border-radius: 4px; cursor: pointer;">SW Status</button>
+                <button onclick="pwaManager.subscribeToPush()" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Subscribe Push</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+    // Dashboard specific script - menggunakan fungsi dari script.js
+    
+    // Update date and time
+    function updateDateTime() {
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        const timeOptions = { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: 'Asia/Jayapura'
+        };
+        
+        document.getElementById('currentDate').textContent = now.toLocaleDateString('id-ID', options);
+        document.getElementById('currentTime').textContent = now.toLocaleTimeString('id-ID', timeOptions) + ' WIT';
+    }
+
+    // Theme Toggle Functionality
+    function initThemeToggle() {
+        const themeToggle = document.getElementById('themeToggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+
+        // Set initial theme
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        updateThemeIcon(currentTheme);
+
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        function updateThemeIcon(theme) {
+            const icon = theme === 'dark' ? '☀️' : '🌙';
+            themeToggle.textContent = icon;
+        }
+    }
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize theme toggle
+        initThemeToggle();
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('Service Worker registered:', registration);
+                })
+                .catch(error => {
+                    console.error('Service Worker registration failed:', error);
+                });
+        }
+
+        // Development mode detection
+        const isDevelopment = window.location.hostname === 'localhost' ||
+                             window.location.hostname === '127.0.0.1' ||
+                             window.location.port === '8888';
+
+        // Show PWA test section in development
+        if (isDevelopment) {
+            const testSection = document.getElementById('pwa-test-section');
+            if (testSection) {
+                testSection.style.display = 'block';
+            }
+        }
+
+        // Keyboard shortcut to show/hide test section (Ctrl+Shift+T)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'T') {
+                e.preventDefault();
+                const testSection = document.getElementById('pwa-test-section');
+                if (testSection) {
+                    testSection.style.display = testSection.style.display === 'none' ? 'block' : 'none';
+                }
+            }
+        });
+
+        // Enhanced Chart Interactivity
+        function initChartInteractivity() {
+            // Chart will be initialized by script.js, but we can enhance it here
+            setTimeout(() => {
+                const chartCanvas = document.getElementById('dashboardChart');
+                if (chartCanvas && chartCanvas.chart) {
+                    const chart = chartCanvas.chart;
+
+                    // Add click interaction
+                    chart.options.onClick = function(event, elements) {
+                        if (elements.length > 0) {
+                            const element = elements[0];
+                            const datasetIndex = element.datasetIndex;
+                            const index = element.index;
+                            const value = chart.data.datasets[datasetIndex].data[index];
+
+                            // Simple alert for demo - can be enhanced
+                            alert(`Data point: ${chart.data.labels[index]}\nValue: ${value}`);
+                        }
+                    };
+
+                    chart.update();
+                }
+            }, 1000);
+        }
+
+        // Enhanced Mobile Gesture Support
+        function initMobileGestures() {
+            let startX, startY, startTime;
+
+            document.addEventListener('touchstart', function(e) {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                startTime = Date.now();
+            });
+
+            document.addEventListener('touchend', function(e) {
+                if (!startX || !startY) return;
+
+                const endX = e.changedTouches[0].clientX;
+                const endY = e.changedTouches[0].clientY;
+                const endTime = Date.now();
+                const diffX = startX - endX;
+                const diffY = startY - endY;
+                const duration = endTime - startTime;
+
+                // Swipe detection with velocity
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50 && duration < 500) {
+                    if (diffX > 0) {
+                        // Swipe left - navigate to next section
+                        navigateSection('next');
+                    } else {
+                        // Swipe right - navigate to previous section
+                        navigateSection('prev');
+                    }
+                }
+
+                startX = null;
+                startY = null;
+            });
+
+            function navigateSection(direction) {
+                const sections = document.querySelectorAll('.main-content > div');
+                let currentIndex = 0;
+
+                sections.forEach((section, index) => {
+                    const rect = section.getBoundingClientRect();
+                    if (rect.top >= 0 && rect.top <= window.innerHeight / 2) {
+                        currentIndex = index;
+                    }
+                });
+
+                const targetIndex = direction === 'next'
+                    ? Math.min(currentIndex + 1, sections.length - 1)
+                    : Math.max(currentIndex - 1, 0);
+
+                sections[targetIndex].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+
+        // Parallax Effects
+        function initParallaxEffects() {
+            const parallaxElements = document.querySelectorAll('.stat-card, .welcome-section, .system-status');
+
+            function updateParallax() {
+                const scrolled = window.pageYOffset;
+                const rate = scrolled * -0.5;
+
+                parallaxElements.forEach((element, index) => {
+                    const speed = (index + 1) * 0.1;
+                    element.style.transform = `translateY(${rate * speed}px)`;
+                });
+            }
+
+            window.addEventListener('scroll', updateParallax);
+        }
+
+        // Performance Optimization
+        function optimizeAnimations() {
+            // Use requestAnimationFrame for smooth animations
+            let ticking = false;
+
+            function updateAnimations() {
+                // Force hardware acceleration
+                document.querySelectorAll('.stat-card').forEach(card => {
+                    card.style.transform += ' translateZ(0)';
+                });
+                ticking = false;
+            }
+
+            function requestTick() {
+                if (!ticking) {
+                    requestAnimationFrame(updateAnimations);
+                    ticking = true;
+                }
+            }
+
+            window.addEventListener('scroll', requestTick);
+        }
+
+        // Gunakan fungsi dari script.js yang sudah diupdate dengan fitur target
+        if (typeof loadDashboardData === 'function') {
+            loadDashboardData();
+        }
+
+        // Initialize new features
+        initChartInteractivity();
+        initMobileGestures();
+        initParallaxEffects();
+        optimizeAnimations();
+
+        updateDateTime();
+        setInterval(updateDateTime, 1000); // Update time every second
+    });
+    </script>
+    <div class="watermark-footer">MADE BY REYNOLDS</div>
+</body>
+</html>

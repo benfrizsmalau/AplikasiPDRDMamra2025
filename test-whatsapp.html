@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WhatsApp Notifications - Aplikasi Pajak Daerah</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body id="page-test-whatsapp">
+
+    <div class="instansi-header">
+        <img src="images/logo.png" alt="Logo" class="instansi-logo">
+        <div class="instansi-text">
+            <div class="instansi-title">APLIKASI SISTEM INFORMASI PENDAPATAN DAERAH</div>
+            <div class="instansi-sub">BIDANG PENDAPATAN DAERAH</div>
+            <div class="instansi-sub2">BADAN PENDAPATAN PENGELOLAAN KEUANGAN DAN ASET DAERAH KABUPATEN MAMBERAMO RAYA</div>
+        </div>
+    </div>
+
+    <div class="sidebar-menu">
+        <nav>
+            <a href="index.html">Dasbor</a>
+            <a href="tambah-data.html">Tambah Data WP</a>
+            <a href="lihat-data.html">Lihat Data WP</a>
+            <a href="tambah-ketetapan.html">Buat Ketetapan</a>
+            <a href="daftar-ketetapan.html">Daftar Ketetapan</a>
+            <a href="setoran-pajak.html">Setoran Pajak</a>
+            <a href="daftar-pembayaran.html">Daftar Pembayaran</a>
+            <a href="daftar-fiskal.html">Daftar Fiskal</a>
+            <a href="review-wajib-pajak.html">Review Data WP</a>
+            <a href="report.html">Laporan</a>
+            <a href="test-whatsapp.html" class="active">🧪 Test WhatsApp</a>
+            <a href="target.html">Target Pajak & Retribusi</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <h2>🧪 Test WhatsApp Notifications</h2>
+
+        <div class="info-box" style="background: #e3f2fd; border: 1px solid #2196f3; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h3>ℹ️ Panduan Testing WhatsApp</h3>
+            <ol style="margin: 10px 0; padding-left: 20px;">
+                <li>Daftarkan nomor WhatsApp Anda di Twilio Sandbox</li>
+                <li>Kirim pesan "join" ke nomor sandbox dari WhatsApp Anda</li>
+                <li>Pilih jenis notifikasi dan NPWPD untuk testing</li>
+                <li>Klik "Kirim Test" untuk mencoba</li>
+            </ol>
+            <p><strong>Nomor Sandbox:</strong> +1 (415) 523-8886</p>
+            <p><strong>Format pesan join:</strong> <code>join <your-code></code></p>
+        </div>
+
+        <div class="wp-form-card">
+            <form id="whatsappTestForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="testNpwpd">NPWPD Wajib Pajak</label>
+                        <select id="testNpwpd" required>
+                            <option value="">-- Pilih NPWPD --</option>
+                        </select>
+                        <div class="form-helper">Pilih wajib pajak yang akan di-test</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="testType">Jenis Notifikasi</label>
+                        <select id="testType" required>
+                            <option value="">-- Pilih Jenis --</option>
+                            <option value="test">Test Message</option>
+                            <option value="registration">Pendaftaran</option>
+                            <option value="ketetapan">Pengingat Ketetapan</option>
+                            <option value="payment_success">Pembayaran Berhasil</option>
+                            <option value="fiskal_reminder">Reminder Fiskal</option>
+                        </select>
+                        <div class="form-helper">Pilih jenis pesan yang akan dikirim</div>
+                    </div>
+
+                    <div class="form-group" id="customDataGroup" style="display: none;">
+                        <label for="customData">Data Tambahan (JSON)</label>
+                        <textarea id="customData" rows="3" placeholder='{"jumlah": 1000000, "jatuhTempo": "2024-12-31"}'></textarea>
+                        <div class="form-helper">Data tambahan untuk template pesan</div>
+                    </div>
+                </div>
+
+                <button type="submit" id="sendTestButton">📱 Kirim Test WhatsApp</button>
+                <div id="testStatus"></div>
+            </form>
+        </div>
+
+        <!-- Log Notifikasi -->
+        <div class="wp-form-card" style="margin-top: 30px;">
+            <h3>📋 Log Notifikasi Terakhir</h3>
+            <div id="notificationLog" style="max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 0.9em;">
+                Belum ada log notifikasi...
+            </div>
+            <button onclick="loadNotificationLog()" style="margin-top: 10px;">🔄 Refresh Log</button>
+        </div>
+
+        <!-- Preview Pesan -->
+        <div class="wp-form-card" style="margin-top: 30px;">
+            <h3>👀 Preview Pesan</h3>
+            <div id="messagePreview" style="background: #f8f9fa; padding: 15px; border-radius: 8px; white-space: pre-line; font-family: 'Courier New', monospace;">
+                Pilih jenis notifikasi untuk melihat preview...
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Load daftar NPWPD
+        async function loadNpwPdList() {
+            try {
+                const response = await fetch('/.netlify/functions/api');
+                const data = await response.json();
+
+                const select = document.getElementById('testNpwpd');
+                select.innerHTML = '<option value="">-- Pilih NPWPD --</option>';
+
+                data.wajibPajak.forEach(wp => {
+                    const option = document.createElement('option');
+                    option.value = wp.NPWPD;
+                    option.textContent = `${wp.NPWPD} - ${wp['Nama Usaha']}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading NPWPD list:', error);
+            }
+        }
+
+        // Preview pesan
+        document.getElementById('testType').addEventListener('change', function() {
+            const type = this.value;
+            const preview = document.getElementById('messagePreview');
+
+            if (!type) {
+                preview.textContent = 'Pilih jenis notifikasi untuk melihat preview...';
+                return;
+            }
+
+            // Mock data untuk preview
+            const mockData = {
+                npwpd: 'P.1.001.01.001',
+                namaUsaha: 'Toko ABC',
+                noKetetapan: 'KT-001/2024',
+                jumlah: 1500000,
+                jatuhTempo: '15/12/2024',
+                tanggalBayar: '10/09/2024',
+                hariTersisa: 30,
+                tanggalJatuhTempo: '31/12/2024'
+            };
+
+            const templates = {
+                test: `🧪 *TEST WHATSAPP*\n\nHalo! Ini adalah pesan test dari sistem notifikasi pajak.\n\nJika Anda menerima pesan ini, berarti WhatsApp notifications sudah bekerja! ✅`,
+                registration: `🎉 *SELAMAT BERGABUNG!*\n\nHalo ${mockData.namaUsaha}!\n\nAnda telah berhasil terdaftar sebagai Wajib Pajak dengan:\n📋 *NPWPD*: ${mockData.npwpd}\n🏢 *Nama Usaha*: ${mockData.namaUsaha}\n\nTerima kasih telah bergabung dengan sistem kami! 🚀`,
+                ketetapan: `💰 *PENGINGAT PEMBAYARAN*\n\nHalo ${mockData.namaUsaha}!\n\nKetetapan pajak Anda telah diterbitkan:\n📄 *No. Ketetapan*: ${mockData.noKetetapan}\n💵 *Jumlah*: Rp ${mockData.jumlah.toLocaleString('id-ID')}\n⏰ *Jatuh Tempo*: ${mockData.jatuhTempo}\n\nSilakan lakukan pembayaran sebelum tanggal jatuh tempo. 💳`,
+                payment_success: `✅ *PEMBAYARAN BERHASIL!*\n\nTerima kasih ${mockData.namaUsaha}!\n\nPembayaran sebesar Rp ${mockData.jumlah.toLocaleString('id-ID')} telah berhasil diproses.\n\nStatus: *LUNAS* ✅\nTanggal: ${mockData.tanggalBayar}\n\nSimpan bukti pembayaran ini sebagai referensi. 📄`,
+                fiskal_reminder: `⚠️ *PENGINGAT FISKAL*\n\nHalo ${mockData.namaUsaha}!\n\nFiskal Anda akan jatuh tempo dalam ${mockData.hariTersisa} hari lagi:\n📅 *Jatuh Tempo*: ${mockData.tanggalJatuhTempo}\n\nSegera perpanjang fiskal Anda untuk menghindari denda! 🏢`
+            };
+
+            preview.textContent = templates[type] || 'Template tidak ditemukan';
+        });
+
+        // Toggle custom data field
+        document.getElementById('testType').addEventListener('change', function() {
+            const customDataGroup = document.getElementById('customDataGroup');
+            const type = this.value;
+
+            // Show custom data for certain types
+            customDataGroup.style.display = ['ketetapan', 'payment_success', 'fiskal_reminder'].includes(type) ? 'block' : 'none';
+        });
+
+        // Handle form submit
+        document.getElementById('whatsappTestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitButton = document.getElementById('sendTestButton');
+            const statusDiv = document.getElementById('testStatus');
+
+            submitButton.disabled = true;
+            submitButton.textContent = '📤 Mengirim...';
+            statusDiv.style.display = 'none';
+
+            try {
+                const formData = {
+                    action: 'sendWhatsApp',
+                    npwpd: document.getElementById('testNpwpd').value,
+                    type: document.getElementById('testType').value
+                };
+
+                // Add custom data if provided
+                const customDataText = document.getElementById('customData').value.trim();
+                if (customDataText) {
+                    try {
+                        formData.customData = JSON.parse(customDataText);
+                    } catch (error) {
+                        throw new Error('Format JSON data tambahan tidak valid');
+                    }
+                }
+
+                const response = await fetch('/.netlify/functions/api', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'sukses') {
+                    statusDiv.textContent = result.message || 'Pesan WhatsApp berhasil dikirim!';
+                    statusDiv.className = 'status-sukses';
+                    statusDiv.style.display = 'block';
+
+                    // Load log terbaru
+                    setTimeout(() => loadNotificationLog(), 1000);
+                } else {
+                    throw new Error(result.message || 'Gagal mengirim pesan WhatsApp');
+                }
+
+            } catch (error) {
+                statusDiv.textContent = 'Error: ' + error.message;
+                statusDiv.className = 'status-gagal';
+                statusDiv.style.display = 'block';
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = '📱 Kirim Test WhatsApp';
+            }
+        });
+
+        // Load notification log
+        async function loadNotificationLog() {
+            try {
+                const response = await fetch('/.netlify/functions/api');
+                const data = await response.json();
+
+                const logDiv = document.getElementById('notificationLog');
+                logDiv.innerHTML = '';
+
+                if (data.notification_logs && data.notification_logs.length > 0) {
+                    data.notification_logs.slice(-10).forEach(log => {
+                        const logEntry = document.createElement('div');
+                        logEntry.style.marginBottom = '10px';
+                        logEntry.style.padding = '8px';
+                        logEntry.style.background = log.status === 'sent' ? '#d4edda' : '#f8d7da';
+                        logEntry.style.borderRadius = '4px';
+
+                        const date = new Date(log.sent_at).toLocaleString('id-ID');
+                        logEntry.innerHTML = `
+                            <strong>${log.notification_type}</strong> (${log.channel}) - ${log.status}<br>
+                            <small>${date}</small><br>
+                            <em>${log.message.substring(0, 100)}${log.message.length > 100 ? '...' : ''}</em>
+                        `;
+
+                        logDiv.appendChild(logEntry);
+                    });
+                } else {
+                    logDiv.textContent = 'Belum ada log notifikasi...';
+                }
+            } catch (error) {
+                console.error('Error loading notification log:', error);
+                document.getElementById('notificationLog').textContent = 'Error loading log: ' + error.message;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNpwPdList();
+            loadNotificationLog();
+        });
+    </script>
+
+    <div class="watermark-footer">MADE BY REYNOLDS</div>
+</body>
+</html>

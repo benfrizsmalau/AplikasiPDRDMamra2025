@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Aplikasi Pajak Daerah</title>
+    <meta name="theme-color" content="#1976d2">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .offline-container {
+            text-align: center;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .offline-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .offline-message {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .offline-features {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .offline-features h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .feature-list {
+            list-style: none;
+            text-align: left;
+        }
+
+        .feature-list li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .retry-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .retry-button:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .connection-status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .connection-status.online {
+            background: rgba(40, 167, 69, 0.3);
+            color: #d4edda;
+        }
+
+        .connection-status.offline {
+            background: rgba(255, 193, 7, 0.3);
+            color: #fff3cd;
+        }
+
+        @media (max-width: 600px) {
+            .offline-container {
+                padding: 30px 20px;
+            }
+
+            .offline-title {
+                font-size: 1.5rem;
+            }
+
+            .offline-message {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📱</div>
+        <h1 class="offline-title">Aplikasi Sedang Offline</h1>
+        <p class="offline-message">
+            Saat ini Anda tidak terhubung ke internet. Namun, beberapa fitur aplikasi masih dapat digunakan secara offline.
+        </p>
+
+        <div class="offline-features">
+            <h3>Fitur Yang Tersedia Offline:</h3>
+            <ul class="feature-list">
+                <li>Melihat data yang sudah dimuat sebelumnya</li>
+                <li>Mengisi formulir (akan disinkronkan saat online)</li>
+                <li>Melihat laporan yang sudah di-cache</li>
+                <li>Mengakses halaman dashboard</li>
+            </ul>
+        </div>
+
+        <button class="retry-button" onclick="checkConnection()">
+            Periksa Koneksi
+        </button>
+
+        <div id="connection-status" class="connection-status offline">
+            Status: Offline - Menunggu koneksi...
+        </div>
+    </div>
+
+    <script>
+        // Check network connection
+        function checkConnection() {
+            const statusDiv = document.getElementById('connection-status');
+
+            if (navigator.onLine) {
+                statusDiv.textContent = 'Status: Online - Koneksi tersedia!';
+                statusDiv.className = 'connection-status online';
+
+                // Try to reload the page after 2 seconds
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                statusDiv.textContent = 'Status: Masih offline - Coba lagi nanti';
+                statusDiv.className = 'connection-status offline';
+            }
+        }
+
+        // Auto-check connection every 30 seconds
+        setInterval(() => {
+            if (navigator.onLine) {
+                const statusDiv = document.getElementById('connection-status');
+                statusDiv.textContent = 'Status: Online - Koneksi tersedia!';
+                statusDiv.className = 'connection-status online';
+
+                // Auto-reload after 3 seconds when connection is restored
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            }
+        }, 30000);
+
+        // Listen for online/offline events
+        window.addEventListener('online', () => {
+            const statusDiv = document.getElementById('connection-status');
+            statusDiv.textContent = 'Status: Online - Koneksi tersedia!';
+            statusDiv.className = 'connection-status online';
+        });
+
+        window.addEventListener('offline', () => {
+            const statusDiv = document.getElementById('connection-status');
+            statusDiv.textContent = 'Status: Offline - Mode terbatas aktif';
+            statusDiv.className = 'connection-status offline';
+        });
+
+        // Service Worker communication
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data && event.data.type === 'SYNC_COMPLETE') {
+                    console.log('Data synchronization completed');
+                    // Show success message
+                    showSyncMessage('Data berhasil disinkronkan!', 'success');
+                }
+            });
+        }
+
+        function showSyncMessage(message, type) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : '#dc3545'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 1000;
+                font-weight: bold;
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // Initial connection check
+        setTimeout(checkConnection, 1000);
+    </script>
+</body>
+</html>

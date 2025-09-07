@@ -1,0 +1,10 @@
+{
+  "name": "proyek-pajak-backend-final",
+  "version": "1.0.0",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "google-auth-library": "^9.0.0",
+    "googleapis": "^122.0.0",
+    "twilio": "^4.19.0"
+  }
+}

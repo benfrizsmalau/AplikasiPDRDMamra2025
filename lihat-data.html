@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lihat Data - Aplikasi Pajak Daerah</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body id="page-lihat-wp">
+
+    <div class="instansi-header">
+        <img src="images/logo.png" alt="Logo" class="instansi-logo">
+        <div class="instansi-text">
+            <div class="instansi-title">APLIKASI SISTEM INFORMASI PENDAPATAN DAERAH</div>
+            <div class="instansi-sub">BIDANG PENDAPATAN DAERAH</div>
+            <div class="instansi-sub2">BADAN PENDAPATAN PENGELOLAAN KEUANGAN DAN ASET DAERAH KABUPATEN MAMBERAMO RAYA</div>
+        </div>
+    </div>
+
+    <div class="sidebar-menu">
+        <nav>
+            <a href="index.html">Dasbor</a>
+            <a href="tambah-data.html">Tambah Data WP</a>
+            <a href="lihat-data.html" class="active">Lihat Data WP</a>
+            <a href="tambah-ketetapan.html">Buat Ketetapan</a>
+            <a href="daftar-ketetapan.html">Daftar Ketetapan</a>
+            <a href="setoran-pajak.html">Setoran Pajak</a>
+            <a href="daftar-pembayaran.html">Daftar Pembayaran</a>
+            <a href="daftar-fiskal.html">Daftar Fiskal</a>
+            <a href="review-wajib-pajak.html">Review Data WP</a>
+            <a href="report.html">Laporan</a>
+            <a href="target.html">Target Pajak & Retribusi</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <main class="container">
+            <h2 style="margin-bottom: 24px; color: #2c3e50; font-size: 1.4rem;">👥 Data Wajib Pajak Terdaftar</h2>
+            
+            <div style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(60,60,120,0.08); margin-bottom: 24px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="searchInput" style="font-size: 0.95rem; color: #3a4a5d; margin-bottom: 8px;">🔍 Cari Wajib Pajak</label>
+                    <input type="text" id="searchInput" placeholder="Ketik NPWPD atau Nama Usaha untuk mencari..." style="font-size: 0.95rem; padding: 12px 16px; border-radius: 8px;">
+                    <div class="form-helper">Cari berdasarkan NPWPD, nama usaha, atau nama pemilik</div>
+                </div>
+            </div>
+
+            <div style="overflow-x:auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(60,60,120,0.08);">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>NPWPD</th>
+                            <th>Nama Usaha</th>
+                            <th>Nama Pemilik</th>
+                            <th>NIK KTP</th>
+                            <th>Alamat</th>
+                            <th>Telephone</th>
+                            <th>Kelurahan</th>
+                            <th>Kecamatan</th>
+                            <th>Status Compliance</th>
+                            <th>Score</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="12" style="text-align: center; padding: 40px; color: #666;">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">✏️ Edit Data Wajib Pajak</h2>
+            <form id="editForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="editNpwd">NPWPD</label>
+                        <input type="text" id="editNpwd" disabled>
+                        <div class="form-helper">NPWPD tidak dapat diubah</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editNamaUsaha">Nama Usaha</label>
+                        <input type="text" id="editNamaUsaha" required>
+                        <div class="form-helper">Nama lengkap usaha/perusahaan</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editNamaPemilik">Nama Pemilik</label>
+                        <input type="text" id="editNamaPemilik" required>
+                        <div class="form-helper">Nama lengkap pemilik usaha</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editNikKtp">NIK KTP</label>
+                        <input type="text" id="editNikKtp" required>
+                        <div class="form-helper">Nomor Induk Kependudukan</div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="editAlamat">Alamat</label>
+                        <input type="text" id="editAlamat" required>
+                        <div class="form-helper">Alamat lengkap usaha</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTelephone">Telephone</label>
+                        <input type="text" id="editTelephone" required>
+                        <div class="form-helper">Nomor telepon yang dapat dihubungi</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editKelurahan">Kelurahan</label>
+                        <select id="editKelurahan" required></select>
+                        <div class="form-helper">Pilih kelurahan tempat usaha</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editKecamatan">Kecamatan</label>
+                        <input type="text" id="editKecamatan" disabled required>
+                        <div class="form-helper">Kecamatan akan terisi otomatis</div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="editTanggalPendaftaran">Tanggal Pendaftaran</label>
+                        <input type="text" id="editTanggalPendaftaran" disabled readonly>
+                        <div class="form-helper">Tanggal otomatis saat pendaftaran</div>
+                    </div>
+                </div>
+                <p style="font-size: 0.85rem; color: #666; margin-top: 16px; padding: 12px; background: #f8f9fa; border-radius: 6px;">⚠️ Fitur edit foto tidak tersedia saat ini. Foto dapat diubah melalui menu Tambah Data WP.</p>
+                <button type="submit" id="updateButton" style="margin-top: 16px;">💾 Simpan Perubahan</button>
+                <div id="editStatus"></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="compliance-tracker.js"></script>
+    <script>
+        // Compliance Integration for Data Table
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for table data to load, then add compliance columns
+            setTimeout(() => {
+                updateTableWithCompliance();
+            }, 2000); // Wait for data to load
+        });
+
+        function updateTableWithCompliance() {
+            const rows = document.querySelectorAll('#dataTable tbody tr');
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 8) { // Make sure we have enough cells
+                    const npwpd = cells[0].textContent;
+                    const namaUsaha = cells[1].textContent;
+                    const namaPemilik = cells[2].textContent;
+                    const nikKtp = cells[3].textContent;
+                    const alamat = cells[4].textContent;
+
+                    // Create mock compliance data (in real implementation, this would come from database)
+                    const complianceData = generateMockComplianceData({
+                        NPWPD: npwpd,
+                        'Nama Usaha': namaUsaha,
+                        'Nama Pemilik': namaPemilik,
+                        'NIK KTP': nikKtp,
+                        'Alamat': alamat
+                    });
+
+                    // Add compliance status cell
+                    const complianceCell = document.createElement('td');
+                    complianceCell.innerHTML = `<span class="compliance-badge ${complianceData.status}">${complianceTracker.getComplianceBadge(complianceData.status).label}</span>`;
+                    row.appendChild(complianceCell);
+
+                    // Add compliance score cell
+                    const scoreCell = document.createElement('td');
+                    scoreCell.innerHTML = `
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: ${complianceData.score}%"></div>
+                            <span class="score-text">${complianceData.score}/100</span>
+                        </div>
+                    `;
+                    row.appendChild(scoreCell);
+
+                    // Update action cell with compliance details button
+                    const actionCell = cells[cells.length - 1];
+                    actionCell.innerHTML += `
+                        <button class="btn-compliance" onclick="showComplianceDetails('${npwpd}')" style="margin-left: 4px;">
+                            📋 Detail
+                        </button>
+                    `;
+                }
+            });
+        }
+
+        function generateMockComplianceData(wpData) {
+            // Calculate compliance score based on available data
+            const score = complianceTracker.calculateComplianceScore({
+                npwpd: wpData.NPWPD,
+                ktp: wpData['NIK KTP'],
+                domisili: wpData['Alamat'],
+                npwp: 'completed', // Assume NPWP is available
+                foto: 'completed'  // Assume photos are available
+            });
+
+            return {
+                score: score,
+                status: complianceTracker.determineComplianceStatus(score)
+            };
+        }
+
+        function showComplianceDetails(npwpd) {
+            // Find the WP data from the table
+            const rows = document.querySelectorAll('#dataTable tbody tr');
+            let wpData = null;
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells[0].textContent === npwpd) {
+                    wpData = {
+                        NPWPD: cells[0].textContent,
+                        'Nama Usaha': cells[1].textContent,
+                        'Nama Pemilik': cells[2].textContent,
+                        'NIK KTP': cells[3].textContent,
+                        'Alamat': cells[4].textContent
+                    };
+                }
+            });
+
+            if (wpData) {
+                const report = complianceTracker.generateComplianceReport(wpData);
+                alert(`Compliance Report untuk ${wpData['Nama Usaha']}:\n\nScore: ${report.complianceScore}/100\nStatus: ${report.complianceStatus}\n\nLast Check: ${new Date(report.lastCheck).toLocaleDateString('id-ID')}`);
+            }
+        }
+    </script>
+    <div class="watermark-footer">MADE BY REYNOLDS</div>
+</body>
+</html>

@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Laporan - Aplikasi Pajak Daerah</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+  
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body id="page-report">
+
+    <div class="instansi-header">
+        <img src="images/logo.png" alt="Logo" class="instansi-logo">
+        <div class="instansi-text">
+            <div class="instansi-title">APLIKASI SISTEM INFORMASI PENDAPATAN DAERAH</div>
+            <div class="instansi-sub">BIDANG PENDAPATAN DAERAH</div>
+            <div class="instansi-sub2">BADAN PENDAPATAN PENGELOLAAN KEUANGAN DAN ASET DAERAH KABUPATEN MAMBERAMO RAYA</div>
+        </div>
+    </div>
+
+    <div class="sidebar-menu">
+        <nav>
+            <a href="index.html">Dasbor</a>
+            <a href="tambah-data.html">Tambah Data WP</a>
+            <a href="lihat-data.html">Lihat Data WP</a>
+            <a href="tambah-ketetapan.html">Buat Ketetapan</a>
+            <a href="daftar-ketetapan.html">Daftar Ketetapan</a>
+            <a href="setoran-pajak.html">Setoran Pajak</a>
+            <a href="daftar-pembayaran.html">Daftar Pembayaran</a>
+            <a href="daftar-fiskal.html">Daftar Fiskal</a>
+            <a href="report.html" class="active">Laporan</a>
+            <a href="target.html">Target Pajak & Retribusi</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <h2>Laporan dan Analisis</h2>
+        
+        <!-- Consolidated Reporting Navigation -->
+        <div class="reporting-navigation">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showReportSection('dashboard')">
+                    🏠 Dashboard
+                </button>
+                <button class="nav-tab" onclick="showReportSection('breakdown')">
+                    📊 Breakdown
+                </button>
+                <button class="nav-tab" onclick="showReportSection('analytics')">
+                    🔍 Analytics
+                </button>
+                <button class="nav-tab" onclick="showReportSection('export')">
+                    📤 Export
+                </button>
+            </div>
+
+            <!-- Quick Filters -->
+            <div class="quick-filters">
+                <div class="filter-group">
+                    <label for="dateRange">Periode:</label>
+                    <select id="dateRange" onchange="loadReportData()">
+                        <option value="today">Hari Ini</option>
+                        <option value="week">Minggu Ini</option>
+                        <option value="month" selected>Bulan Ini</option>
+                        <option value="quarter">Triwulan</option>
+                        <option value="year">Tahun Ini</option>
+                        <option value="custom">Kustom</option>
+                    </select>
+                </div>
+                <div class="filter-group" id="customDateGroup" style="display: none;">
+                    <label for="startDate">Dari:</label>
+                    <input type="date" id="startDate" onchange="loadReportData()">
+                    <label for="endDate">Sampai:</label>
+                    <input type="date" id="endDate" onchange="loadReportData()">
+                </div>
+                <div class="filter-group">
+                    <button onclick="refreshDashboard()" class="btn-secondary">🔄 Refresh</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consolidated Report Content -->
+        <div id="reportContent">
+
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="report-section active">
+                <div class="dashboard-header">
+                    <h3>📊 Dashboard Executive - Ringkasan Kinerja</h3>
+                    <p>Monitor performa pendapatan daerah secara real-time</p>
+                </div>
+                <h3>Ringkasan Umum</h3>
+
+                <!-- Executive KPI Cards (8 Cards) -->
+                <div class="executive-kpis">
+                    <div class="kpi-row">
+                        <div class="kpi-card primary">
+                            <div class="kpi-header">
+                                <div class="kpi-icon">💰</div>
+                                <div class="kpi-trend" id="revenueTrend">↗ +12.5%</div>
+                            </div>
+                            <div class="kpi-content">
+                                <h4>Total Pendapatan</h4>
+                                <div class="kpi-value" id="totalRevenue">Rp 0</div>
+                                <div class="kpi-subtitle">Bulan ini</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card secondary">
+                            <div class="kpi-header">
+                                <div class="kpi-icon">👥</div>
+                                <div class="kpi-trend" id="wpTrend">↗ +5.2%</div>
+                            </div>
+                            <div class="kpi-content">
+                                <h4>Wajib Pajak Aktif</h4>
+                                <div class="kpi-value" id="activeWp">0</div>
+                                <div class="kpi-subtitle">Total terdaftar</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card accent">
+                            <div class="kpi-header">
+                                <div class="kpi-icon">📄</div>
+                                <div class="kpi-trend" id="ketetapanTrend">→ 0%</div>
+                            </div>
+                            <div class="kpi-content">
+                                <h4>Ketetapan Terbit</h4>
+                                <div class="kpi-value" id="totalKetetapan">0</div>
+                                <div class="kpi-subtitle">Bulan ini</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card success">
+                            <div class="kpi-header">
+                                <div class="kpi-icon">✅</div>
+                                <div class="kpi-trend" id="paymentTrend">↗ +8.7%</div>
+                            </div>
+                            <div class="kpi-content">
+                                <h4>Pembayaran Sukses</h4>
+                                <div class="kpi-value" id="successPayment">0</div>
+                                <div class="kpi-subtitle">Transaksi berhasil</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kpi-row">
+                        <div class="kpi-card growth">
+                            <div class="kpi-header">
+                                <div class="kpi-icon">📈</div>
+                                <div class="kpi-trend" id="growthTrendCard">↗ +15.3%</div>
+                            </div>
+                            <div class="kpi-content">
+                                <h4>Tren Pertumbuhan</h4>
+                                <div class="kpi-value" id="growthTrend">15.3%</div>
+                                <div class="kpi-subtitle">YoY Growth</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card compliance">
+                            <div class="kpi-header">
+                                <div class="kpi-icon">📊</div>
+                                <div class="kpi-trend" id="complianceTrendCard">↗ +7.1%</div>
+                            </div>
+                            <div class="kpi-content">
+                                <h4>Kepatuhan WP</h4>
+                                <div class="kpi-value" id="complianceRate">87.2%</div>
+                                <div class="kpi-subtitle">Tingkat kepatuhan</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card distribution">
+                            <div class="kpi-header">
+                                <div class="kpi-icon">🗂️</div>
+                                <div class="kpi-trend" id="distributionTrend">→ Stabil</div>
+                            </div>
+                            <div class="kpi-content">
+                                <h4>Distribusi Objek</h4>
+                                <div class="kpi-value" id="objectCount">8</div>
+                                <div class="kpi-subtitle">Jenis objek pajak</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card efficiency">
+                            <div class="kpi-header">
+                                <div class="kpi-icon">⚡</div>
+                                <div class="kpi-trend" id="efficiencyTrend">↗ +12.8%</div>
+                            </div>
+                            <div class="kpi-content">
+                                <h4>Efisiensi Proses</h4>
+                                <div class="kpi-value" id="processEfficiency">2.1 hari</div>
+                                <div class="kpi-subtitle">Rata-rata waktu proses</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Statistics Cards -->
+                <div class="summary-grid secondary-grid">
+                    <div class="summary-card growth-card">
+                        <div class="card-header">
+                            <div class="card-icon">📈</div>
+                            <div class="card-trend positive">↗ +15.3%</div>
+                        </div>
+                        <div class="card-content">
+                            <h4>Tren Pertumbuhan</h4>
+                            <div class="summary-value" id="growthTrend">15.3%</div>
+                            <div class="card-subtitle">YoY Growth</div>
+                        </div>
+                        <div class="card-progress">
+                            <div class="progress-bar" id="growthProgress" style="width: 85%"></div>
+                        </div>
+                        <div class="card-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Target</span>
+                                <span class="metric-value">80%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-card compliance-card">
+                        <div class="card-header">
+                            <div class="card-icon">📊</div>
+                            <div class="card-trend positive">↗ +7.1%</div>
+                        </div>
+                        <div class="card-content">
+                            <h4>Kepatuhan WP</h4>
+                            <div class="summary-value" id="complianceRate">87.2%</div>
+                            <div class="card-subtitle">Tingkat kepatuhan</div>
+                        </div>
+                        <div class="card-progress">
+                            <div class="progress-bar" id="complianceProgress" style="width: 87%"></div>
+                        </div>
+                        <div class="card-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Target</span>
+                                <span class="metric-value">85%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-card distribution-card">
+                        <div class="card-header">
+                            <div class="card-icon">🗂️</div>
+                            <div class="card-trend neutral">→ Stabil</div>
+                        </div>
+                        <div class="card-content">
+                            <h4>Distribusi Objek</h4>
+                            <div class="summary-value" id="objectCount">8</div>
+                            <div class="card-subtitle">Jenis objek pajak</div>
+                        </div>
+                        <div class="card-progress">
+                            <div class="progress-bar" id="distributionProgress" style="width: 100%"></div>
+                        </div>
+                        <div class="card-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Aktif</span>
+                                <span class="metric-value">8/8</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-card efficiency-card">
+                        <div class="card-header">
+                            <div class="card-icon">⚡</div>
+                            <div class="card-trend positive">↗ +12.8%</div>
+                        </div>
+                        <div class="card-content">
+                            <h4>Efisiensi Proses</h4>
+                            <div class="summary-value" id="processEfficiency">2.1 hari</div>
+                            <div class="card-subtitle">Rata-rata waktu proses</div>
+                        </div>
+                        <div class="card-progress">
+                            <div class="progress-bar" id="efficiencyProgress" style="width: 78%"></div>
+                        </div>
+                        <div class="card-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Target</span>
+                                <span class="metric-value">2.5 hari</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Overview Section -->
+                <div class="charts-overview">
+                    <h4>📊 Visualisasi Data</h4>
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h5>🥧 Distribusi Pendapatan</h5>
+                            <canvas id="objectDistributionChart" height="250"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h5>📈 Tren Bulanan</h5>
+                            <canvas id="monthlyTrendChart" height="250"></canvas>
+                        </div>
+                        <div class="chart-card full-width">
+                            <h5>📉 Pertumbuhan Tahunan</h5>
+                            <canvas id="yearlyGrowthChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Breakdown Section -->
+            <div id="breakdownSection" class="report-section" style="display: none;">
+                <div class="breakdown-header">
+                    <h3>📊 Breakdown Detail</h3>
+                    <p>Analisis mendalam berdasarkan kategori</p>
+                </div>
+
+                <div class="breakdown-tabs">
+                    <button class="breakdown-tab active" onclick="showBreakdownCategory('pendapatan')">
+                        💰 Pendapatan
+                    </button>
+                    <button class="breakdown-tab" onclick="showBreakdownCategory('wajib-pajak')">
+                        👥 Wajib Pajak
+                    </button>
+                    <button class="breakdown-tab" onclick="showBreakdownCategory('ketetapan')">
+                        📄 Ketetapan
+                    </button>
+                    <button class="breakdown-tab" onclick="showBreakdownCategory('pembayaran')">
+                        ✅ Pembayaran
+                    </button>
+                    <button class="breakdown-tab" onclick="showBreakdownCategory('overdue')">
+                        ⏰ WP Jatuh Tempo
+                    </button>
+                    <button class="breakdown-tab" onclick="showBreakdownCategory('per-objek')">
+                        📊 Per Objek Pajak
+                    </button>
+                </div>
+
+                <div id="breakdownContent">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div id="analyticsSection" class="report-section" style="display: none;">
+                <div class="analytics-header">
+                    <h3>🔍 Advanced Analytics</h3>
+                    <p>Analisis lanjutan dengan filter canggih</p>
+                </div>
+
+                <div class="analytics-filters">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>Jenis Objek Pajak:</label>
+                            <select id="analyticsObjekFilter">
+                                <option value="all">Semua</option>
+                                <option value="pbb">PBB</option>
+                                <option value="bphtb">BPHTB</option>
+                                <option value="retribusi">Retribusi</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Wilayah:</label>
+                            <select id="analyticsWilayahFilter">
+                                <option value="all">Semua Wilayah</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Status:</label>
+                            <select id="analyticsStatusFilter">
+                                <option value="all">Semua Status</option>
+                                <option value="aktif">Aktif</option>
+                                <option value="non-aktif">Non-Aktif</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-content">
+                    <div class="analytics-summary">
+                        <div class="analytics-card">
+                            <h4>📊 Filtered Results</h4>
+                            <div class="analytics-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-label">Total Records:</span>
+                                    <span class="metric-value" id="filteredCount">0</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Total Value:</span>
+                                    <span class="metric-value" id="filteredValue">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-charts">
+                        <div class="chart-container">
+                            <canvas id="analyticsChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Section -->
+            <div id="exportSection" class="report-section" style="display: none;">
+                <div class="export-header">
+                    <h3>📤 Export & Reports</h3>
+                    <p>Generate dan download laporan dalam berbagai format</p>
+                </div>
+
+                <div class="export-options">
+                    <div class="export-card">
+                        <div class="export-icon">📄</div>
+                        <h4>PDF Report</h4>
+                        <p>Laporan lengkap dalam format PDF</p>
+                        <button onclick="exportReport()" class="btn-primary">Generate PDF</button>
+                    </div>
+
+                    <div class="export-card">
+                        <div class="export-icon">📊</div>
+                        <h4>Excel Data</h4>
+                        <p>Data mentah dalam format Excel</p>
+                        <button onclick="exportExcel()" class="btn-primary">Download Excel</button>
+                    </div>
+
+                    <div class="export-card">
+                        <div class="export-icon">🖼️</div>
+                        <h4>Chart Images</h4>
+                        <p>Visualisasi dalam format gambar</p>
+                        <button onclick="exportCharts()" class="btn-primary">Export Charts</button>
+                    </div>
+
+                    <div class="export-card">
+                        <div class="export-icon">👥</div>
+                        <h4>Laporan Wajib Pajak</h4>
+                        <p>Export tabel wajib pajak ke PDF</p>
+                        <button onclick="exportWajibPajakToPDF({reportData: reportData, startDate: getDateRange().startDate, endDate: getDateRange().endDate})" class="btn-primary">Export PDF</button>
+                    </div>
+
+                    <div class="export-card">
+                        <div class="export-icon">📄</div>
+                        <h4>Laporan Ketetapan</h4>
+                        <p>Export tabel ketetapan ke PDF</p>
+                        <button onclick="exportKetetapanToPDF({reportData: reportData, startDate: getDateRange().startDate, endDate: getDateRange().endDate})" class="btn-primary">Export PDF</button>
+                    </div>
+
+                    <div class="export-card">
+                        <div class="export-icon">💰</div>
+                        <h4>Laporan Pembayaran</h4>
+                        <p>Export tabel pembayaran ke PDF</p>
+                        <button onclick="exportPembayaranToPDF({reportData: reportData, startDate: getDateRange().startDate, endDate: getDateRange().endDate})" class="btn-primary">Export PDF</button>
+                    </div>
+
+                    <div class="export-card">
+                        <div class="export-icon">📋</div>
+                        <h4>Laporan Fiskal</h4>
+                        <p>Export daftar fiskal ke PDF</p>
+                        <button onclick="exportFiskalToPDF({reportData: reportData, startDate: getDateRange().startDate, endDate: getDateRange().endDate})" class="btn-primary">Export PDF</button>
+                    </div>
+
+                    <div class="export-card">
+                        <div class="export-icon">⏰</div>
+                        <h4>WP Jatuh Tempo</h4>
+                        <p>Wajib pajak dengan kewajiban lewat tempo</p>
+                        <button onclick="exportOverdueWpToPDF({reportData: reportData, startDate: getDateRange().startDate, endDate: getDateRange().endDate})" class="btn-warning">Export PDF</button>
+                    </div>
+
+                    <div class="export-card">
+                        <div class="export-icon">📋</div>
+                        <h4>Laporan Fiskal</h4>
+                        <p>Daftar wajib pajak yang sudah lunas pajak reklame dan retribusi sampah</p>
+                        <button onclick="exportFiskalReportToPDF({reportData: reportData, startDate: getDateRange().startDate, endDate: getDateRange().endDate})" class="btn-primary">Export PDF</button>
+                    </div>
+
+                    <div class="export-card">
+                        <div class="export-icon">📊</div>
+                        <h4>Laporan Per Objek Pajak</h4>
+                        <p>Ringkasan kinerja per jenis objek pajak</p>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="exportPerObjekReportToPDF({reportData: reportData, startDate: getDateRange().startDate, endDate: getDateRange().endDate, viewType: 'ketetapan'})" class="btn-primary" style="flex: 1; min-width: 120px;">Export Ketetapan</button>
+                            <button onclick="exportPerObjekReportToPDF({reportData: reportData, startDate: getDateRange().startDate, endDate: getDateRange().endDate, viewType: 'pembayaran'})" class="btn-secondary" style="flex: 1; min-width: 120px;">Export Pembayaran</button>
+                        </div>
+                    </div>
+
+                    <div class="export-card">
+                        <div class="export-icon">�</div>
+                        <h4>Test Functions</h4>
+                        <p>Test semua fungsi export PDF</p>
+                        <button onclick="testPdfFunctions()" class="btn-secondary">Test PDF</button>
+                    </div>
+                </div>
+
+                <div class="export-settings">
+                    <h4>⚙️ Export Settings</h4>
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <label for="exportFormat">Format Laporan:</label>
+                            <select id="exportFormat">
+                                <option value="detailed">Detail Lengkap</option>
+                                <option value="summary">Ringkasan</option>
+                                <option value="per-objek">Per Objek Pajak</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label for="exportPeriod">Periode:</label>
+                            <select id="exportPeriod">
+                                <option value="current">Periode Saat Ini</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- Library untuk export PDF sudah dimuat di atas -->
+    <script>
+        // Dynamic cache buster
+        const timestamp = Date.now();
+        console.log('=== LOADING SCRIPTS WITH TIMESTAMP:', timestamp);
+        document.write('<script src="report.js?v=1.2&t=' + timestamp + '"><\/script>');
+        document.write('<script src="cetakreport.js?v=1.2&t=' + timestamp + '"><\/script>');
+    </script>
+    <script>
+        // Consolidated Reporting Navigation Functions
+        function showReportSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.report-section');
+            sections.forEach(section => section.style.display = 'none');
+
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show selected section
+            const selectedSection = document.getElementById(sectionName + 'Section');
+            if (selectedSection) {
+                selectedSection.style.display = 'block';
+            }
+
+            // Add active class to selected tab
+            const selectedTab = document.querySelector(`[onclick="showReportSection('${sectionName}')"]`);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+
+            // Load data for the section if needed
+            if (sectionName === 'breakdown') {
+                loadBreakdownData();
+            } else if (sectionName === 'analytics') {
+                loadAnalyticsData();
+            }
+        }
+
+        function showBreakdownCategory(category) {
+            // Update active tab
+            const tabs = document.querySelectorAll('.breakdown-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            const selectedTab = document.querySelector(`[onclick="showBreakdownCategory('${category}')"]`);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+
+            // Load category data
+            loadBreakdownCategoryData(category);
+        }
+
+        function refreshDashboard() {
+            loadReportData();
+            // Show success message
+            showNotification('Dashboard berhasil di-refresh', 'success');
+        }
+
+        function exportCharts() {
+            alert('Fitur export chart akan segera tersedia');
+        }
+
+        function showNotification(message, type = 'info') {
+            // Simple notification - can be enhanced with proper notification system
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : '#007bff'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-weight: 500;
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== REPORT PAGE DOMContentLoaded ===');
+            // Set dashboard as default active section
+            showReportSection('dashboard');
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            console.log('=== REPORT PAGE BEFORE UNLOAD - CLEANUP ===');
+            // Clear any global state or timers if needed
+            if (window.summaryChartInstance) {
+                window.summaryChartInstance.destroy();
+            }
+            if (window.objectDistributionChartInstance) {
+                window.objectDistributionChartInstance.destroy();
+            }
+            if (window.monthlyTrendChartInstance) {
+                window.monthlyTrendChartInstance.destroy();
+            }
+            if (window.yearlyGrowthChartInstance) {
+                window.yearlyGrowthChartInstance.destroy();
+            }
+        });
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                console.log('=== REPORT PAGE HIDDEN ===');
+            } else {
+                console.log('=== REPORT PAGE VISIBLE ===');
+                // Refresh data when page becomes visible again
+                if (reportData && Object.keys(reportData).length > 0) {
+                    console.log('Refreshing report data on page visibility...');
+                    loadReportData();
+                }
+            }
+        });
+
+        // Placeholder functions for new features
+        function loadBreakdownData() {
+            console.log('Loading breakdown data...');
+            // Implement breakdown data loading
+        }
+
+        function loadBreakdownCategoryData(category) {
+            console.log('Loading breakdown category:', category);
+            const breakdownContent = document.getElementById('breakdownContent');
+
+            if (!breakdownContent) {
+                console.error('Breakdown content container not found');
+                return;
+            }
+
+            // Clear previous content
+            breakdownContent.innerHTML = '<div class="loading">Memuat data...</div>';
+
+            // Load data based on category
+            if (typeof loadReportData === 'function') {
+                loadReportData().then(() => {
+                    // After data is loaded, display category-specific content
+                    displayBreakdownCategory(category);
+                }).catch(error => {
+                    console.error('Error loading data:', error);
+                    breakdownContent.innerHTML = '<div class="error">Gagal memuat data</div>';
+                });
+            } else {
+                // If loadReportData is not available, try to display directly
+                displayBreakdownCategory(category);
+            }
+        }
+
+        function displayBreakdownCategory(category) {
+            const breakdownContent = document.getElementById('breakdownContent');
+            if (!breakdownContent) return;
+
+            let content = '';
+
+            switch(category) {
+                case 'pendapatan':
+                    content = generateRevenueBreakdownContent();
+                    break;
+                case 'wajib-pajak':
+                    content = generateWpBreakdownContent();
+                    break;
+                case 'ketetapan':
+                    content = generateKetetapanBreakdownContent();
+                    break;
+                case 'pembayaran':
+                    content = generatePembayaranBreakdownContent();
+                    break;
+                case 'overdue':
+                    content = generateOverdueWpBreakdownContent();
+                    break;
+                case 'per-objek':
+                    content = generatePerObjekBreakdownContent();
+                    break;
+                default:
+                    content = '<div class="error">Kategori tidak ditemukan</div>';
+            }
+
+            breakdownContent.innerHTML = content;
+
+            // Initialize any charts or interactive elements after content is loaded
+            if (category === 'pendapatan') {
+                setTimeout(() => {
+                    initializeRevenueBreakdownChart();
+                }, 200);
+            }
+        }
+
+        function generateRevenueBreakdownContent() {
+            if (!reportData || !reportData.pembayaran) {
+                return '<div class="error">Data belum tersedia</div>';
+            }
+
+            // Debug info
+            let debugInfo = '<div style="background: #f0f0f0; padding: 10px; margin-bottom: 10px; font-size: 12px;">';
+            debugInfo += '<strong>Debug Info:</strong><br>';
+            debugInfo += 'Pembayaran records: ' + reportData.pembayaran.length + '<br>';
+            debugInfo += 'Master Pajak records: ' + (reportData.masterPajak ? reportData.masterPajak.length : 0) + '<br>';
+            debugInfo += 'Ketetapan records: ' + (reportData.ketetapan ? reportData.ketetapan.length : 0) + '<br>';
+            debugInfo += '</div>';
+
+            // Calculate realisasi by KodeLayanan
+            const realisasiByKode = {};
+            const countByKode = {};
+            let totalRevenue = 0;
+            let totalCount = 0;
+            reportData.pembayaran.forEach(p => {
+                if (p.StatusPembayaran !== 'Sukses') return;
+                const ketetapan = (reportData.ketetapan || []).find(k => k.ID_Ketetapan === p.ID_Ketetapan);
+                if (!ketetapan) return;
+                const kode = ketetapan.KodeLayanan;
+                if (!realisasiByKode[kode]) {
+                    realisasiByKode[kode] = 0;
+                    countByKode[kode] = 0;
+                }
+                const amount = parseFloat(p.JumlahBayar) || 0;
+                realisasiByKode[kode] += amount;
+                countByKode[kode] += 1;
+                totalRevenue += amount;
+                totalCount += 1;
+            });
+
+            debugInfo += '<div style="background: #e0e0e0; padding: 10px; margin-bottom: 10px; font-size: 12px;">';
+            debugInfo += 'Realisasi data keys: ' + Object.keys(realisasiByKode).join(', ') + '<br>';
+            debugInfo += 'Total Revenue: Rp ' + totalRevenue.toLocaleString('id-ID') + '<br>';
+            debugInfo += 'Total Count: ' + totalCount + '<br>';
+            debugInfo += '</div>';
+
+            let html = '<div class="breakdown-revenue" style="padding: 20px; background: #fff; border: 1px solid #ddd; margin: 10px 0;">';
+            html += '<h4 style="color: #333; margin-bottom: 20px;">💰 Breakdown Pendapatan per Objek Pajak</h4>';
+            html += '<div class="revenue-breakdown-container" id="revenueBreakdownContainer" style="width: 100%;">';
+
+            // Header
+            html += '<div class="revenue-header">';
+            html += '<span class="header-item">Jenis Pajak</span>';
+            html += '<span class="header-item">Total Pendapatan</span>';
+            html += '<span class="header-item">Jumlah Transaksi</span>';
+            html += '<span class="header-item">Persentase</span>';
+            html += '</div>';
+
+            // Data rows
+            Object.keys(realisasiByKode).forEach(kode => {
+                const master = reportData.masterPajak?.find(m => m.KodeLayanan === kode);
+                const nama = master?.NamaLayanan || kode;
+                const total = realisasiByKode[kode];
+                const count = countByKode[kode];
+                const persentase = totalRevenue > 0 ? (total / totalRevenue * 100).toFixed(1) : 0;
+                html += '<div class="revenue-row" style="display: flex; gap: 16px; padding: 8px; border-bottom: 1px solid #e0e0e0; align-items: center;">';
+                html += `<span class="data-item" style="flex: 3;">${nama}</span>`;
+                html += `<span class="data-item" style="flex: 2; text-align: right;">Rp ${total.toLocaleString('id-ID')}</span>`;
+                html += `<span class="data-item" style="flex: 1; text-align: center;">${count}</span>`;
+                html += `<span class="data-item" style="flex: 1; text-align: center;">${persentase}%</span>`;
+                html += '</div>';
+            });
+
+            // Total row
+            html += '<div class="revenue-total" style="display: flex; gap: 16px; padding: 10px 8px; font-weight: bold; background: #e9ecef; border-radius: 4px; margin-top: 4px;">';
+            html += '<span class="data-item" style="flex: 3; text-align: right;"><strong>TOTAL</strong></span>';
+            html += `<span class="data-item" style="flex: 2; text-align: right;"><strong>Rp ${totalRevenue.toLocaleString('id-ID')}</strong></span>`;
+            html += `<span class="data-item" style="flex: 1; text-align: center;"><strong>${totalCount}</strong></span>`;
+            html += '<span class="data-item" style="flex: 1; text-align: center;"><strong>100%</strong></span>';
+            html += '</div>';
+
+            html += '</div>';
+
+            // Add chart section
+            html += '<div class="chart-section" style="margin-top: 30px;">';
+            html += '<h4>📊 Distribusi Pendapatan</h4>';
+            html += '<canvas id="breakdownRevenueChart" height="300"></canvas>';
+            html += '</div>';
+
+            html += '</div>';
+
+            // Add debug info at the end
+            html = debugInfo + html;
+
+            return html;
+        }
+
+        function generateWpBreakdownContent() {
+            if (!reportData || !reportData.wajibPajak) {
+                return '<div class="error">Data wajib pajak belum tersedia</div>';
+            }
+
+            const wpData = reportData.wajibPajak;
+            let html = '<div class="breakdown-wp">';
+            html += '<h4>👥 Data Wajib Pajak</h4>';
+            html += '<div class="wp-stats">';
+            html += `<div class="stat-item">Total Wajib Pajak: <strong>${wpData.length}</strong></div>`;
+
+            // Group by jenis WP
+            const jenisCount = {};
+            wpData.forEach(wp => {
+                const jenis = wp['Jenis WP'] || 'Tidak Diketahui';
+                jenisCount[jenis] = (jenisCount[jenis] || 0) + 1;
+            });
+
+            html += '<div class="jenis-breakdown">';
+            Object.entries(jenisCount).forEach(([jenis, count]) => {
+                html += `<div class="jenis-item">${jenis}: ${count}</div>`;
+            });
+            html += '</div></div>';
+
+            return html;
+        }
+
+        function generateKetetapanBreakdownContent() {
+            if (!reportData || !reportData.ketetapan) {
+                return '<div class="error">Data ketetapan belum tersedia</div>';
+            }
+
+            const ketetapanData = reportData.ketetapan;
+            const lunasCount = ketetapanData.filter(k => k.Status === 'Lunas').length;
+            const belumLunasCount = ketetapanData.length - lunasCount;
+
+            let html = '<div class="breakdown-ketetapan">';
+            html += '<h4>📄 Data Ketetapan</h4>';
+            html += '<div class="ketetapan-stats">';
+            html += `<div class="stat-item">Total Ketetapan: <strong>${ketetapanData.length}</strong></div>`;
+            html += `<div class="stat-item">Lunas: <strong>${lunasCount}</strong></div>`;
+            html += `<div class="stat-item">Belum Lunas: <strong>${belumLunasCount}</strong></div>`;
+            html += `<div class="stat-item">Tingkat Kepatuhan: <strong>${ketetapanData.length > 0 ? (lunasCount / ketetapanData.length * 100).toFixed(1) : 0}%</strong></div>`;
+            html += '</div></div>';
+
+            return html;
+        }
+
+        function generatePembayaranBreakdownContent() {
+            if (!reportData || !reportData.pembayaran) {
+                return '<div class="error">Data pembayaran belum tersedia</div>';
+            }
+
+            const pembayaranData = reportData.pembayaran;
+            const successCount = pembayaranData.filter(p => p.StatusPembayaran === 'Sukses').length;
+            const failedCount = pembayaranData.length - successCount;
+            const totalValue = pembayaranData.reduce((sum, p) => sum + (parseFloat(p.JumlahBayar) || 0), 0);
+
+            let html = '<div class="breakdown-pembayaran">';
+            html += '<h4>✅ Data Pembayaran</h4>';
+            html += '<div class="pembayaran-stats">';
+            html += `<div class="stat-item">Total Transaksi: <strong>${pembayaranData.length}</strong></div>`;
+            html += `<div class="stat-item">Berhasil: <strong>${successCount}</strong></div>`;
+            html += `<div class="stat-item">Gagal: <strong>${failedCount}</strong></div>`;
+            html += `<div class="stat-item">Total Nilai: <strong>Rp ${totalValue.toLocaleString('id-ID')}</strong></div>`;
+            html += `<div class="stat-item">Tingkat Sukses: <strong>${pembayaranData.length > 0 ? (successCount / pembayaranData.length * 100).toFixed(1) : 0}%</strong></div>`;
+            html += '</div></div>';
+
+            return html;
+        }
+
+        function generateOverdueWpBreakdownContent() {
+            if (!reportData || !reportData.ketetapan || !reportData.wajibPajak) {
+                return '<div class="error">Data ketetapan atau wajib pajak belum tersedia</div>';
+            }
+
+            const currentDate = new Date();
+            const overdueKetetapan = reportData.ketetapan.filter(k => {
+                if (k.Status === 'Lunas') return false;
+                if (!k.TanggalJatuhTempo) return false;
+                const dueDate = new Date(k.TanggalJatuhTempo);
+                return dueDate < currentDate;
+            });
+
+            const overdueByWp = {};
+            overdueKetetapan.forEach(k => {
+                if (!overdueByWp[k.NPWPD]) {
+                    overdueByWp[k.NPWPD] = {
+                        npwpd: k.NPWPD,
+                        ketetapan: [],
+                        totalTagihan: 0
+                    };
+                }
+                overdueByWp[k.NPWPD].ketetapan.push(k);
+                overdueByWp[k.NPWPD].totalTagihan += parseFloat(k.TotalTagihan) || 0;
+            });
+
+            let html = '<div class="breakdown-overdue">';
+            html += '<h4>⏰ Wajib Pajak dengan Kewajiban Jatuh Tempo</h4>';
+            html += '<div class="overdue-stats">';
+            html += `<div class="stat-item">Total WP Jatuh Tempo: <strong>${Object.keys(overdueByWp).length}</strong></div>`;
+            html += `<div class="stat-item">Total Ketetapan Jatuh Tempo: <strong>${overdueKetetapan.length}</strong></div>`;
+            const totalOverdueValue = Object.values(overdueByWp).reduce((sum, wp) => sum + wp.totalTagihan, 0);
+            html += `<div class="stat-item">Total Nilai Jatuh Tempo: <strong>Rp ${totalOverdueValue.toLocaleString('id-ID')}</strong></div>`;
+            html += '</div>';
+
+            if (Object.keys(overdueByWp).length > 0) {
+                html += '<div class="overdue-table-container" style="margin-top: 20px;">';
+                html += '<table class="overdue-table" style="width: 100%; border-collapse: collapse;">';
+                html += '<thead><tr style="background: #f8f9fa;">';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">No</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">NPWPD</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Nama Usaha</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">Jumlah Ketetapan</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Total Tagihan</th>';
+                html += '</tr></thead><tbody>';
+
+                Object.values(overdueByWp).forEach((wp, index) => {
+                    const wpData = reportData.wajibPajak.find(w => w.NPWPD === wp.npwpd) || {};
+                    html += `<tr style="border-bottom: 1px solid #dee2e6;">`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6;">${index + 1}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6;">${wp.npwpd}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6;">${wpData['Nama Usaha'] || '-'}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">${wp.ketetapan.length}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Rp ${wp.totalTagihan.toLocaleString('id-ID')}</td>`;
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                html += '</div>';
+            } else {
+                html += '<div class="no-overdue" style="text-align: center; padding: 40px; color: #666;">';
+                html += '🎉 Tidak ada wajib pajak dengan kewajiban jatuh tempo saat ini.';
+                html += '</div>';
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function generatePerObjekBreakdownContent() {
+            if (!reportData || !reportData.ketetapan || !reportData.pembayaran || !reportData.masterPajak) {
+                return '<div class="error">Data ketetapan, pembayaran, atau master pajak belum tersedia</div>';
+            }
+
+            let html = '<div class="breakdown-per-objek">';
+            html += '<h4>📊 Laporan Per Objek Pajak</h4>';
+
+            // Sub-tabs for different views
+            html += '<div class="per-objek-sub-tabs" style="margin: 20px 0; border-bottom: 1px solid #dee2e6;">';
+            html += '<button class="sub-tab active" onclick="showPerObjekView(\'ketetapan\')" style="padding: 10px 20px; margin-right: 10px; border: 1px solid #dee2e6; background: #007bff; color: white; border-radius: 4px 4px 0 0; cursor: pointer;">📄 Berdasarkan Ketetapan</button>';
+            html += '<button class="sub-tab" onclick="showPerObjekView(\'pembayaran\')" style="padding: 10px 20px; border: 1px solid #dee2e6; background: #f8f9fa; color: #495057; border-radius: 4px 4px 0 0; cursor: pointer;">💰 Berdasarkan Pembayaran</button>';
+            html += '</div>';
+
+            // Container for different views
+            html += '<div id="per-objek-content">';
+
+            // Default view (Ketetapan-based)
+            html += generatePerObjekKetetapanView();
+
+            html += '</div>';
+            html += '</div>';
+
+            return html;
+        }
+
+        function generatePerObjekKetetapanView() {
+            // Group ketetapan by KodeLayanan
+            const ketetapanByObjek = {};
+            reportData.ketetapan.forEach(k => {
+                const kode = k.KodeLayanan;
+                if (!ketetapanByObjek[kode]) {
+                    ketetapanByObjek[kode] = {
+                        kode: kode,
+                        ketetapan: [],
+                        totalTagihan: 0,
+                        lunas: 0,
+                        belumLunas: 0,
+                        tunggakan: 0
+                    };
+                }
+                ketetapanByObjek[kode].ketetapan.push(k);
+                ketetapanByObjek[kode].totalTagihan += parseFloat(k.TotalTagihan) || 0;
+                if (k.Status === 'Lunas') {
+                    ketetapanByObjek[kode].lunas += 1;
+                } else {
+                    ketetapanByObjek[kode].belumLunas += 1;
+                    ketetapanByObjek[kode].tunggakan += parseFloat(k.TotalTagihan) || 0;
+                }
+            });
+
+            // Group pembayaran by KodeLayanan
+            const pembayaranByObjek = {};
+            reportData.pembayaran.forEach(p => {
+                if (p.StatusPembayaran !== 'Sukses') return;
+                const ketetapan = reportData.ketetapan.find(k => k.ID_Ketetapan === p.ID_Ketetapan);
+                if (!ketetapan) return;
+                const kode = ketetapan.KodeLayanan;
+                if (!pembayaranByObjek[kode]) {
+                    pembayaranByObjek[kode] = {
+                        kode: kode,
+                        pembayaran: [],
+                        totalPembayaran: 0,
+                        count: 0
+                    };
+                }
+                pembayaranByObjek[kode].pembayaran.push(p);
+                pembayaranByObjek[kode].totalPembayaran += parseFloat(p.JumlahBayar) || 0;
+                pembayaranByObjek[kode].count += 1;
+            });
+
+            let html = '<div class="per-objek-view" id="ketetapan-view">';
+
+            // Summary stats
+            const totalObjek = Object.keys(ketetapanByObjek).length;
+            const totalKetetapan = Object.values(ketetapanByObjek).reduce((sum, obj) => sum + obj.ketetapan.length, 0);
+            const totalTagihan = Object.values(ketetapanByObjek).reduce((sum, obj) => sum + obj.totalTagihan, 0);
+            const totalPembayaran = Object.values(pembayaranByObjek).reduce((sum, obj) => sum + obj.totalPembayaran, 0);
+
+            html += '<div class="per-objek-stats" style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">';
+            html += `<div class="stat-item" style="background: #e9ecef; padding: 10px; border-radius: 4px; flex: 1; min-width: 150px;"><strong>Total Objek Pajak:</strong> ${totalObjek}</div>`;
+            html += `<div class="stat-item" style="background: #e9ecef; padding: 10px; border-radius: 4px; flex: 1; min-width: 150px;"><strong>Total Ketetapan:</strong> ${totalKetetapan}</div>`;
+            html += `<div class="stat-item" style="background: #e9ecef; padding: 10px; border-radius: 4px; flex: 1; min-width: 150px;"><strong>Total Tagihan:</strong> Rp ${totalTagihan.toLocaleString('id-ID')}</div>`;
+            html += `<div class="stat-item" style="background: #e9ecef; padding: 10px; border-radius: 4px; flex: 1; min-width: 150px;"><strong>Rasio Pembayaran:</strong> ${totalTagihan > 0 ? ((totalPembayaran / totalTagihan) * 100).toFixed(1) : 0}%</div>`;
+            html += '</div>';
+
+            if (totalObjek > 0) {
+                html += '<div class="per-objek-table-container" style="margin-top: 20px; overflow-x: auto;">';
+                html += '<table class="per-objek-table" style="width: 100%; border-collapse: collapse; min-width: 800px;">';
+                html += '<thead><tr style="background: #f8f9fa;">';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">No</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Kode Objek</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Nama Objek</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">Jumlah Ketetapan</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Total Tagihan</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Total Pembayaran</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">Lunas</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">Belum Lunas</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Tunggakan</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">%</th>';
+                html += '</tr></thead><tbody>';
+
+                Object.values(ketetapanByObjek).forEach((obj, index) => {
+                    const master = reportData.masterPajak.find(m => m.KodeLayanan === obj.kode);
+                    const namaObjek = master?.NamaLayanan || obj.kode;
+                    const pembayaran = pembayaranByObjek[obj.kode] || { totalPembayaran: 0, count: 0 };
+                    const persentase = obj.totalTagihan > 0 ? ((pembayaran.totalPembayaran / obj.totalTagihan) * 100).toFixed(1) : 0;
+
+                    html += `<tr style="border-bottom: 1px solid #dee2e6;">`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6;">${index + 1}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6;">${obj.kode}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6;">${namaObjek}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">${obj.ketetapan.length}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Rp ${obj.totalTagihan.toLocaleString('id-ID')}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Rp ${pembayaran.totalPembayaran.toLocaleString('id-ID')}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">${obj.lunas}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">${obj.belumLunas}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Rp ${obj.tunggakan.toLocaleString('id-ID')}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: center; font-weight: bold; color: ${persentase >= 100 ? '#28a745' : (persentase >= 50 ? '#ffc107' : '#dc3545')};">${persentase}%</td>`;
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                html += '</div>';
+            } else {
+                html += '<div class="no-data" style="text-align: center; padding: 40px; color: #666;">';
+                html += '📊 Belum ada data objek pajak.';
+                html += '</div>';
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function generatePerObjekPembayaranView() {
+            // Group pembayaran by KodeLayanan
+            const pembayaranByObjek = {};
+            reportData.pembayaran.forEach(p => {
+                if (p.StatusPembayaran !== 'Sukses') return;
+                const ketetapan = reportData.ketetapan.find(k => k.ID_Ketetapan === p.ID_Ketetapan);
+                if (!ketetapan) return;
+                const kode = ketetapan.KodeLayanan;
+                if (!pembayaranByObjek[kode]) {
+                    pembayaranByObjek[kode] = {
+                        kode: kode,
+                        pembayaran: [],
+                        totalPembayaran: 0,
+                        count: 0,
+                        metodeBayar: {}
+                    };
+                }
+                pembayaranByObjek[kode].pembayaran.push(p);
+                pembayaranByObjek[kode].totalPembayaran += parseFloat(p.JumlahBayar) || 0;
+                pembayaranByObjek[kode].count += 1;
+
+                // Count payment methods
+                const metode = p.MetodeBayar || 'Tidak Diketahui';
+                pembayaranByObjek[kode].metodeBayar[metode] = (pembayaranByObjek[kode].metodeBayar[metode] || 0) + 1;
+            });
+
+            let html = '<div class="per-objek-view" id="pembayaran-view" style="display: none;">';
+
+            // Summary stats
+            const totalObjek = Object.keys(pembayaranByObjek).length;
+            const totalPembayaran = Object.values(pembayaranByObjek).reduce((sum, obj) => sum + obj.count, 0);
+            const totalNilai = Object.values(pembayaranByObjek).reduce((sum, obj) => sum + obj.totalPembayaran, 0);
+
+            html += '<div class="per-objek-stats" style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">';
+            html += `<div class="stat-item" style="background: #e9ecef; padding: 10px; border-radius: 4px; flex: 1; min-width: 150px;"><strong>Total Objek Pajak:</strong> ${totalObjek}</div>`;
+            html += `<div class="stat-item" style="background: #e9ecef; padding: 10px; border-radius: 4px; flex: 1; min-width: 150px;"><strong>Total Pembayaran:</strong> ${totalPembayaran}</div>`;
+            html += `<div class="stat-item" style="background: #e9ecef; padding: 10px; border-radius: 4px; flex: 1; min-width: 150px;"><strong>Total Nilai:</strong> Rp ${totalNilai.toLocaleString('id-ID')}</div>`;
+            html += `<div class="stat-item" style="background: #e9ecef; padding: 10px; border-radius: 4px; flex: 1; min-width: 150px;"><strong>Rata-rata per Pembayaran:</strong> Rp ${(totalPembayaran > 0 ? totalNilai / totalPembayaran : 0).toLocaleString('id-ID')}</div>`;
+            html += '</div>';
+
+            if (totalObjek > 0) {
+                html += '<div class="per-objek-table-container" style="margin-top: 20px; overflow-x: auto;">';
+                html += '<table class="per-objek-table" style="width: 100%; border-collapse: collapse; min-width: 800px;">';
+                html += '<thead><tr style="background: #f8f9fa;">';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">No</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Kode Objek</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Nama Objek</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">Jumlah Pembayaran</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Total Pembayaran</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">Metode Bayar</th>';
+                html += '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">Kontribusi</th>';
+                html += '</tr></thead><tbody>';
+
+                Object.values(pembayaranByObjek).forEach((obj, index) => {
+                    const master = reportData.masterPajak.find(m => m.KodeLayanan === obj.kode);
+                    const namaObjek = master?.NamaLayanan || obj.kode;
+                    const kontribusi = totalNilai > 0 ? ((obj.totalPembayaran / totalNilai) * 100).toFixed(1) : 0;
+                    const metodeUtama = Object.entries(obj.metodeBayar).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+
+                    html += `<tr style="border-bottom: 1px solid #dee2e6;">`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6;">${index + 1}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6;">${obj.kode}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6;">${namaObjek}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">${obj.count}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: right;">Rp ${obj.totalPembayaran.toLocaleString('id-ID')}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">${metodeUtama}</td>`;
+                    html += `<td style="padding: 8px; border: 1px solid #dee2e6; text-align: center; font-weight: bold; color: ${kontribusi >= 20 ? '#28a745' : (kontribusi >= 10 ? '#ffc107' : '#dc3545')};">${kontribusi}%</td>`;
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                html += '</div>';
+            } else {
+                html += '<div class="no-data" style="text-align: center; padding: 40px; color: #666;">';
+                html += '💰 Belum ada data pembayaran per objek pajak.';
+                html += '</div>';
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function showPerObjekView(viewType) {
+            const content = document.getElementById('per-objek-content');
+            if (!content) return;
+
+            // Update tab styles
+            const tabs = document.querySelectorAll('.sub-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            tabs.forEach(tab => {
+                if (tab.textContent.includes(viewType === 'ketetapan' ? 'Ketetapan' : 'Pembayaran')) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // Update tab button styles
+            const ketetapanTab = document.querySelector('.sub-tab:first-child');
+            const pembayaranTab = document.querySelector('.sub-tab:last-child');
+
+            if (viewType === 'ketetapan') {
+                ketetapanTab.style.background = '#007bff';
+                ketetapanTab.style.color = 'white';
+                pembayaranTab.style.background = '#f8f9fa';
+                pembayaranTab.style.color = '#495057';
+            } else {
+                pembayaranTab.style.background = '#007bff';
+                pembayaranTab.style.color = 'white';
+                ketetapanTab.style.background = '#f8f9fa';
+                ketetapanTab.style.color = '#495057';
+            }
+
+            // Show appropriate view
+            if (viewType === 'ketetapan') {
+                content.innerHTML = generatePerObjekKetetapanView();
+            } else {
+                content.innerHTML = generatePerObjekPembayaranView();
+            }
+        }
+
+        function loadAnalyticsData() {
+            console.log('Loading analytics data...');
+            // Implement analytics data loading
+        }
+
+        function initializeRevenueBreakdownChart() {
+            const canvas = document.getElementById('breakdownRevenueChart');
+            if (!canvas || !reportData || !reportData.pembayaran) {
+                console.warn('Revenue breakdown chart canvas or data not available');
+                return;
+            }
+
+            const ctx = canvas.getContext('2d');
+
+            // Group data by KodeLayanan
+            const groupedData = groupByKodeLayanan(reportData.pembayaran, reportData.masterPajak, 'JumlahBayar');
+
+            const labels = Object.values(groupedData).map(item => item.nama || item.kode);
+            const data = Object.values(groupedData).map(item => item.total);
+
+            // Color palette
+            const colors = [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+            ];
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: Rp ${value.toLocaleString('id-ID')} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

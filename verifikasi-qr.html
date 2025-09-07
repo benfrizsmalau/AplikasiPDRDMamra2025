@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Verifikasi QR Code Pembayaran</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .container { max-width: 600px; margin: 0 auto; }
+    #reader { width: 100%; }
+    #result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+    .valid { background: #d4edda; color: #155724; }
+    .invalid { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Verifikasi QR Code Pembayaran</h1>
+    <p>Scan QR code dari bukti pembayaran untuk verifikasi keaslian.</p>
+    <div id="reader"></div>
+    <button onclick="startScan()">Mulai Scan</button>
+    <button onclick="stopScan()">Stop Scan</button>
+    <div id="result"></div>
+  </div>
+  <script>
+    let html5QrcodeScanner;
+
+    function startScan() {
+      html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+      html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    }
+
+    function stopScan() {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear();
+      }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+      verifyQR(decodedText);
+    }
+
+    function onScanFailure(error) {
+      console.warn(`QR code scan error: ${error}`);
+    }
+
+    async function verifyQR(data) {
+      const parts = data.split('|');
+      if (parts.length !== 5) {
+        showResult('Format QR code tidak valid.', false);
+        return;
+      }
+      const [idPembayaran, npwpd, jumlah, tanggal, hash] = parts;
+      const originalData = `${idPembayaran}|${npwpd}|${jumlah}|${tanggal}`;
+      const computedHash = btoa(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(originalData))).slice(0, 16);
+
+      if (computedHash === hash) {
+        // Fetch data to verify existence
+        try {
+          const res = await fetch('/.netlify/functions/api');
+          const apiData = await res.json();
+          const pembayaran = apiData.pembayaran.find(p => p.ID_Pembayaran === idPembayaran && p.NPWPD === npwpd && p.JumlahBayar == jumlah);
+          if (pembayaran) {
+            showResult(`Pembayaran Sah!<br>ID: ${idPembayaran}<br>NPWPD: ${npwpd}<br>Jumlah: Rp ${parseInt(jumlah).toLocaleString('id-ID')}<br>Tanggal: ${new Date(tanggal).toLocaleDateString('id-ID')}`, true);
+          } else {
+            showResult('Data pembayaran tidak ditemukan di sistem.', false);
+          }
+        } catch (e) {
+          showResult('Gagal verifikasi dengan server.', false);
+        }
+      } else {
+        showResult('Hash tidak cocok - QR code tidak sah.', false);
+      }
+    }
+
+    function showResult(message, isValid) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = message;
+      resultDiv.className = isValid ? 'valid' : 'invalid';
+    }
+  </script>
+</body>
+</html>

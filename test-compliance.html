@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Compliance System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-content">
+        <h2>🧪 Test Compliance Tracking System</h2>
+
+        <div class="test-section">
+            <h3>Test Compliance Calculation</h3>
+            <div class="test-input">
+                <label>NPWPD:</label>
+                <input type="text" id="testNpwpd" value="P.1.001.01.001">
+
+                <label>Nama Usaha:</label>
+                <input type="text" id="testNamaUsaha" value="CV. Test Company">
+
+                <label>NIK KTP:</label>
+                <input type="text" id="testNik" value="1234567890123456">
+
+                <label>Alamat:</label>
+                <input type="text" id="testAlamat" value="Jl. Test No. 123">
+
+                <button onclick="testCompliance()">Test Compliance Score</button>
+            </div>
+
+            <div id="testResult" class="test-result">
+                <!-- Results will appear here -->
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Database Migration Status</h3>
+            <button onclick="checkMigrationStatus()">Check Migration Status</button>
+            <div id="migrationStatus" class="test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>API Test</h3>
+            <button onclick="testAPIConnection()">Test API Connection</button>
+            <div id="apiTest" class="test-result"></div>
+        </div>
+    </div>
+
+    <script src="compliance-tracker.js"></script>
+    <script>
+        function testCompliance() {
+            const wpData = {
+                NPWPD: document.getElementById('testNpwpd').value,
+                'Nama Usaha': document.getElementById('testNamaUsaha').value,
+                'NIK KTP': document.getElementById('testNik').value,
+                'Alamat': document.getElementById('testAlamat').value
+            };
+
+            const score = complianceTracker.calculateComplianceScore(wpData);
+            const status = complianceTracker.determineComplianceStatus(score);
+            const report = complianceTracker.generateComplianceReport(wpData);
+
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.innerHTML = `
+                <h4>✅ Compliance Test Results</h4>
+                <p><strong>Score:</strong> ${score}/100</p>
+                <p><strong>Status:</strong> ${status}</p>
+                <p><strong>Report:</strong></p>
+                <pre>${JSON.stringify(report, null, 2)}</pre>
+            `;
+        }
+
+        async function checkMigrationStatus() {
+            try {
+                const response = await fetch('/.netlify/functions/api');
+                const data = await response.json();
+
+                if (data.wajibPajak && data.wajibPajak.length > 0) {
+                    const sampleWp = data.wajibPajak[0];
+                    const hasComplianceFields = 'compliance_status' in sampleWp;
+
+                    document.getElementById('migrationStatus').innerHTML = `
+                        <h4>📊 Migration Status</h4>
+                        <p><strong>Database Connected:</strong> ✅ Yes</p>
+                        <p><strong>Records Found:</strong> ${data.wajibPajak.length}</p>
+                        <p><strong>Compliance Fields:</strong> ${hasComplianceFields ? '✅ Available' : '❌ Not Found'}</p>
+                        ${hasComplianceFields ? `
+                            <p><strong>Sample Compliance Data:</strong></p>
+                            <ul>
+                                <li>Status: ${sampleWp.compliance_status || 'Not set'}</li>
+                                <li>Score: ${sampleWp.compliance_score || 0}</li>
+                            </ul>
+                        ` : '<p>⚠️ Run database migration first</p>'}
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('migrationStatus').innerHTML = `
+                    <h4>❌ Migration Status Error</h4>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testAPIConnection() {
+            try {
+                const response = await fetch('/.netlify/functions/api');
+                const data = await response.json();
+
+                document.getElementById('apiTest').innerHTML = `
+                    <h4>🔗 API Connection Test</h4>
+                    <p><strong>Status:</strong> ✅ Connected</p>
+                    <p><strong>Response Time:</strong> ${response.headers.get('server-timing') || 'N/A'}</p>
+                    <p><strong>Data Tables:</strong></p>
+                    <ul>
+                        <li>Wajib Pajak: ${data.wajibPajak ? data.wajibPajak.length : 0} records</li>
+                        <li>Wilayah: ${data.wilayah ? data.wilayah.length : 0} records</li>
+                        <li>Ketetapan: ${data.ketetapan ? data.ketetapan.length : 0} records</li>
+                        <li>Pembayaran: ${data.pembayaran ? data.pembayaran.length : 0} records</li>
+                    </ul>
+                `;
+            } catch (error) {
+                document.getElementById('apiTest').innerHTML = `
+                    <h4>❌ API Connection Error</h4>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Auto-run tests on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            testCompliance();
+            setTimeout(() => {
+                checkMigrationStatus();
+                testAPIConnection();
+            }, 1000);
+        });
+    </script>
+
+    <style>
+        .test-section {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .test-input {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .test-input label {
+            font-weight: 500;
+        }
+
+        .test-input input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .test-input button {
+            grid-column: 1 / -1;
+            padding: 0.75rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .test-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .test-result h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--primary-color);
+        }
+
+        .test-result pre {
+            background: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.8rem;
+        }
+    </style>
+</body>
+</html>
