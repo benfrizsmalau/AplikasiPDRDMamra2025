@@ -1852,6 +1852,36 @@ async function handleDeleteKetetapanClick(idKetetapan) {
     }
 }
 
+// Fungsi untuk menampilkan dashboard offline
+function showOfflineDashboard() {
+    console.log('Menampilkan mode offline dashboard');
+    
+    // Set nilai default untuk elemen dashboard
+    const elements = [
+        'totalWp', 'totalKetetapan', 'totalPembayaran',
+        'totalSkpdSkrd', 'totalSspdSsrd', 'totalFiskal',
+        'totalNilaiKetetapan', 'totalNilaiSetoran'
+    ];
+    
+    elements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = 'Offline';
+        }
+    });
+    
+    // Sembunyikan grafik jika ada
+    const chartCanvas = document.getElementById('dashboardChart');
+    if (chartCanvas) {
+        const ctx = chartCanvas.getContext('2d');
+        ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+        ctx.fillStyle = '#666';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Grafik tidak tersedia dalam mode offline', chartCanvas.width/2, chartCanvas.height/2);
+    }
+}
+
 async function loadDashboardData() {
     try {
         const response = await fetch('/.netlify/functions/api');
