@@ -1882,8 +1882,7 @@ async function loadDashboardData() {
         const ketetapan = data.ketetapan || [];
         const pembayaran = data.pembayaran || [];
         const targetList = data.targetPajakRetribusi || [];
-        const tahunBerjalan = new Date().getFullYear();</search>
-</search_and_replace>
+        const tahunBerjalan = new Date().getFullYear();
         
         // Hitung total target tahun berjalan
         const totalTargetTahun = targetList.filter(t => t.Tahun == tahunBerjalan).reduce((sum, t) => sum + (parseFloat(t.Target) || 0), 0);
